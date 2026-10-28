@@ -16,6 +16,26 @@ dados, isolados no backend.
 | Documentação da API | OpenAPI / Swagger UI (springdoc) |
 | Infra local | Docker Compose (PostgreSQL, Mailpit, backend, frontend/Nginx) |
 
+## Telas
+
+Capturas do ambiente demonstrativo (todos os dados são fictícios e os pagamentos são simulados).
+
+![Dashboard do painel no modo escuro](docs/screenshots/painel-dashboard-escuro.png)
+
+| Produtos (modo claro) | Detalhe do pedido (modo escuro) |
+|---|---|
+| ![Lista de produtos](docs/screenshots/painel-produtos-claro.png) | ![Detalhe de um pedido com reembolso parcial e devolução](docs/screenshots/painel-pedido-escuro.png) |
+| **Fluxo de caixa realizado e projetado** | **Aparência do painel (fundo e vidro por loja)** |
+| ![Fluxo de caixa](docs/screenshots/painel-financeiro-claro.png) | ![Configuração da aparência do painel](docs/screenshots/painel-aparencia-escuro.png) |
+| **Loja virtual** | **Página de produto com variações** |
+| ![Página inicial da loja virtual](docs/screenshots/loja-inicio.png) | ![Página de produto](docs/screenshots/loja-produto.png) |
+
+<p>
+  <img src="docs/screenshots/celular-dashboard.png" alt="Dashboard no celular" width="260">
+  &nbsp;
+  <img src="docs/screenshots/celular-menu.png" alt="Menu recolhível no celular" width="260">
+</p>
+
 ---
 
 ## 1. Como executar
