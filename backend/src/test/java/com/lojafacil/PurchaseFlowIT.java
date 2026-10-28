@@ -31,10 +31,8 @@ import com.lojafacil.shared.error.ApiException;
 import com.lojafacil.support.IntegrationTest;
 import com.lojafacil.support.TestData;
 
-/** Fluxo de compra, estoque, pagamentos, webhooks, cancelamentos e reembolsos. */
 @Import(TestData.class)
 class PurchaseFlowIT extends IntegrationTest {
-
     @Autowired
     PaymentService payments;
     @Autowired
@@ -53,7 +51,7 @@ class PurchaseFlowIT extends IntegrationTest {
         Long variantId = data.variantOf(p);
 
         CheckoutResponse r = data.buy(s.slug(), variantId, 2);
-        // total calculado no servidor: 2 x 80,00 (preço promocional), retirada sem taxa
+
         assertThat(r.total()).isEqualByComparingTo("160.00");
         assertThat(r.simulated()).isTrue();
         assertThat(r.checkoutUrl()).contains("/pagamento-simulado/");
@@ -70,7 +68,7 @@ class PurchaseFlowIT extends IntegrationTest {
         ProductVariant after = data.variant(variantId);
         assertThat(after.getPhysicalQty()).isEqualTo(3);
         assertThat(after.getReservedQty()).isZero();
-        // item preserva a "fotografia" da venda
+
         assertThat(o.getItems().get(0).getUnitCost()).isEqualByComparingTo("30.00");
         assertThat(o.getItems().get(0).getUnitDiscount()).isEqualByComparingTo("20.00");
 
@@ -91,7 +89,6 @@ class PurchaseFlowIT extends IntegrationTest {
         assertThat(webhooks.receiveSimulator(payload, sig)).isEqualTo(WebhookService.Outcome.ACCEPTED);
         assertThat(webhooks.receiveSimulator(payload, sig)).isEqualTo(WebhookService.Outcome.DUPLICATE);
 
-        // mesmo com eventos diferentes para a mesma aprovação, o efeito acontece uma única vez
         for (int i = 0; i < 3; i++) {
             processor.processNow(com.lojafacil.payments.ProviderType.SIMULATOR, "k" + i, payment.getProviderCheckoutId(), s.storeId());
         }
@@ -115,7 +112,7 @@ class PurchaseFlowIT extends IntegrationTest {
         Order o = data.order(s.storeId(), r.orderNumber());
         data.pay(s.storeId(), r.orderNumber(), true);
         Payment p = data.paymentOf(o.getId());
-        // notificação antiga "pendente" chegando depois da aprovação
+
         String result = payments.apply(p.getId(), new com.lojafacil.payments.PaymentProvider.ProviderPayment(
                 p.getProviderCheckoutId(), p.getPublicId().toString(), PaymentStatus.PENDING, "PENDING",
                 p.getAmount(), "BRL", BigDecimal.ZERO, BigDecimal.ZERO, null, false));
@@ -184,7 +181,6 @@ class PurchaseFlowIT extends IntegrationTest {
         assertThat(expired.getPaymentStatus()).isEqualTo(PaymentStatus.EXPIRED);
         assertThat(data.variant(variantId).getReservedQty()).isZero();
 
-        // cliente pagou depois do prazo e ainda há estoque: pedido reativado, com aviso
         data.pay(s.storeId(), r.orderNumber(), true);
         Order late = data.order(s.storeId(), r.orderNumber());
         assertThat(late.getStatus()).isEqualTo(OrderStatus.CONFIRMED);
@@ -200,7 +196,7 @@ class PurchaseFlowIT extends IntegrationTest {
         Order o = data.order(s.storeId(), first.orderNumber());
         expireNow(o.getId());
         payments.expireOrder(o.getId());
-        // outra pessoa compra e paga a unidade liberada
+
         CheckoutResponse second = data.buy(s.slug(), variantId, 1);
         data.pay(s.storeId(), second.orderNumber(), true);
 
@@ -244,7 +240,7 @@ class PurchaseFlowIT extends IntegrationTest {
                 .isInstanceOf(ApiException.class);
         payments.refund(s.storeId(), orderId, new BigDecimal("70.00"), "restante");
         assertThat(data.order(s.storeId(), r.orderNumber()).getPaymentStatus()).isEqualTo(PaymentStatus.REFUNDED);
-        // a sincronização posterior com o provedor não duplica os reembolsos
+
         payments.sync(data.paymentOf(orderId).getId());
         assertThat(sumEntries(s.storeId(), "REFUND")).isEqualByComparingTo("100.00");
     }

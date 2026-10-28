@@ -11,7 +11,6 @@ import { Icon } from '../shared/icon';
 import { Empty } from '../shared/ui';
 import { StoreContext } from './store-context';
 
-/** Resumo do carrinho calculado pelo servidor (componente reutilizado no checkout). */
 @Component({
   selector: 'app-store-cart',
   imports: [RouterLink, BrlPipe, Icon, Empty],

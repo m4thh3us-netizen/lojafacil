@@ -16,13 +16,11 @@ import lombok.Setter;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-/** Configuração de pagamento por loja. Credenciais ficam cifradas (AES-GCM) e nunca voltam ao navegador. */
 @Entity
 @Table(name = "payment_integrations")
 @Getter
 @Setter
 public class PaymentIntegration {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -9,14 +9,11 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-/** Repositórios do módulo de estoque. */
 public final class InventoryRepositories {
-
     private InventoryRepositories() {
     }
 
     public interface MovementRepo extends JpaRepository<StockMovement, Long> {
-
         @EntityGraph(attributePaths = {"variant", "variant.product"})
         @Query("""
                 select m from StockMovement m
@@ -32,10 +29,8 @@ public final class InventoryRepositories {
     }
 
     public interface ReservationRepo extends JpaRepository<StockReservation, Long> {
-
         List<StockReservation> findByOrderIdAndStatus(Long orderId, StockReservation.Status status);
 
-        /** Pedidos com reservas vencidas (o job de expiração processa em lotes). */
         @Query("select distinct r.orderId from StockReservation r where r.status = 'ACTIVE' and r.expiresAt < :now")
         List<Long> findOrdersWithExpiredReservations(Instant now, Pageable pageable);
     }

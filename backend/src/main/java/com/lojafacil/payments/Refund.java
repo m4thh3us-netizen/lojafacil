@@ -18,16 +18,11 @@ import lombok.Setter;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-/**
- * Reembolso. É gravado como REQUESTED antes de chamar o provedor; assim, se a resposta se perder,
- * a próxima tentativa reutiliza a mesma chave de idempotência e o provedor não reembolsa duas vezes.
- */
 @Entity
 @Table(name = "refunds")
 @Getter
 @Setter
 public class Refund {
-
     public enum Status { REQUESTED, COMPLETED, FAILED }
 
     @Id

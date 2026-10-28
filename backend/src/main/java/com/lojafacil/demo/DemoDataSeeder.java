@@ -66,18 +66,9 @@ import com.lojafacil.shared.files.FileStorageService;
 import com.lojafacil.store.Store;
 import com.lojafacil.store.StoreRepository;
 
-/**
- * Dados do AMBIENTE DEMONSTRATIVO (perfil "demo"). Nunca roda em outros perfis.
- *
- * Tudo é criado pelos mesmos serviços usados pela aplicação (pedidos, estoque, pagamentos simulados),
- * então os dados respeitam as regras de negócio. Ao final, as datas são distribuídas pelos últimos
- * 30 dias para que gráficos e relatórios tenham conteúdo. A loja fica marcada como "demo",
- * e a interface exibe o aviso de dados fictícios.
- */
 @Component
 @Profile("demo")
 public class DemoDataSeeder implements ApplicationRunner {
-
     private static final Logger log = LoggerFactory.getLogger(DemoDataSeeder.class);
     public static final String SLUG = "demo";
     public static final String OWNER_EMAIL = "demo@lojafacil.dev";
@@ -145,8 +136,6 @@ public class DemoDataSeeder implements ApplicationRunner {
         log.info("Ambiente demonstrativo pronto. Login: {} / senha em README (apenas demonstração).", OWNER_EMAIL);
     }
 
-    // ------------------------------------------------------------------ loja e equipe
-
     private Long createStoreAndUsers() {
         Store store = new Store();
         store.setSlug(SLUG);
@@ -186,8 +175,6 @@ public class DemoDataSeeder implements ApplicationRunner {
         users.save(u);
     }
 
-    // ------------------------------------------------------------------ catálogo e estoque
-
     private final List<Long> sellable = new ArrayList<>();
 
     private void seedCatalogAndStock(Long storeId) {
@@ -223,7 +210,6 @@ public class DemoDataSeeder implements ApplicationRunner {
         simpleProduct(storeId, acc.id(), "Chaveiro Acrílico", "CHV-ACR", "3.50", "14.90", null, 0, 5,
                 "Chaveiro em acrílico cortado a laser.", new Color(100, 116, 139), false);
 
-        // reposição registrada com fornecedor (histórico de movimentações)
         tx.executeWithoutResult(s -> {
             Long variantId = sellable.get(0);
             inventory.entry(storeId, variantId, 5, "Reposição - NF do fornecedor (exemplo)", supplier.id());
@@ -273,7 +259,6 @@ public class DemoDataSeeder implements ApplicationRunner {
         });
     }
 
-    /** Gera uma "foto" ilustrativa (degradê + iniciais) — evita depender de imagens de terceiros. */
     private static BufferedImage render(String name, Color base) {
         int size = 800;
         BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
@@ -305,8 +290,6 @@ public class DemoDataSeeder implements ApplicationRunner {
         return sb.toString();
     }
 
-    // ------------------------------------------------------------------ clientes e pedidos
-
     private void seedCustomersAndOrders(Long storeId) {
         String[][] people = {
                 {"Mariana Exemplo", "mariana@cliente.exemplo", "(11) 91111-1111"},
@@ -321,7 +304,6 @@ public class DemoDataSeeder implements ApplicationRunner {
                     "Cliente fictício do ambiente demonstrativo.", List.of(addr)));
         }
 
-        // 10 pedidos pagos (confirmados), com atendimento em estágios diferentes
         for (int i = 0; i < 10; i++) {
             String[] p = people[i % people.length];
             DeliveryMethod dm = i % 3 == 0 ? DeliveryMethod.LOCAL_DELIVERY : DeliveryMethod.PICKUP;
@@ -337,7 +319,6 @@ public class DemoDataSeeder implements ApplicationRunner {
                 tx.executeWithoutResult(s -> orderService.updateFulfillment(storeId, orderId, FulfillmentStatus.PICKING, "Separando itens"));
             }
             if (i == 2) {
-                // devolução recebida e conferida (repõe estoque)
                 tx.executeWithoutResult(s -> {
                     OrderItem item = orderRepo.findById(orderId).orElseThrow().getItems().get(0);
                     orderService.registerReturn(storeId, orderId, new ReturnRequest(
@@ -349,26 +330,21 @@ public class DemoDataSeeder implements ApplicationRunner {
             }
         }
 
-        // pedido aguardando pagamento (reserva ativa)
         checkout.publicCheckout(SLUG, checkoutRequest(people[1], List.of(new CartLine(sellable.get(3), 1))));
 
-        // pagamento recusado
         CheckoutResponse declined = checkout.publicCheckout(SLUG, checkoutRequest(people[2], List.of(new CartLine(sellable.get(13), 1))));
         decideLatest(storeId, declined, false);
 
-        // pedido cancelado pela loja antes do pagamento
         CheckoutResponse toCancel = checkout.publicCheckout(SLUG, checkoutRequest(people[3], List.of(new CartLine(sellable.get(10), 2))));
         Long cancelId = orderIdByNumber(storeId, toCancel.orderNumber());
         payments.cancelOrder(storeId, cancelId, "Cliente desistiu da compra (exemplo)");
 
-        // pedido manual pago na loja (dinheiro)
         CheckoutResponse manual = checkout.manualOrder(storeId, new ManualOrderRequest(null,
                 new CustomerData(people[4][0], people[4][1], people[4][2]), DeliveryMethod.PICKUP, null,
                 List.of(new CartLine(sellable.get(12), 2)), ManualPaymentMode.OFFLINE, "Venda no balcão"));
         Long manualId = orderIdByNumber(storeId, manual.orderNumber());
         payments.registerManualPayment(storeId, manualId, "Dinheiro");
 
-        // pedido com reserva expirada (prazo vencido sem pagamento)
         CheckoutResponse expired = checkout.publicCheckout(SLUG, checkoutRequest(people[0], List.of(new CartLine(sellable.get(13), 1))));
         Long expiredId = orderIdByNumber(storeId, expired.orderNumber());
         jdbc.update("update orders set reservation_expires_at = now() - interval '1 hour' where id = ?", expiredId);
@@ -388,7 +364,6 @@ public class DemoDataSeeder implements ApplicationRunner {
         }
     }
 
-    /** Simula o cliente decidindo na página de pagamento e o webhook chegando. */
     private void decideLatest(Long storeId, CheckoutResponse r, boolean approve) {
         Long orderId = orderIdByNumber(storeId, r.orderNumber());
         Payment p = paymentRepo.findFirstByOrderIdOrderByCreatedAtDesc(orderId).orElseThrow();
@@ -413,8 +388,6 @@ public class DemoDataSeeder implements ApplicationRunner {
     private Long orderIdByNumber(Long storeId, int number) {
         return jdbc.queryForObject("select id from orders where store_id = ? and number = ?", Long.class, storeId, number);
     }
-
-    // ------------------------------------------------------------------ financeiro
 
     private void seedFinance(Long storeId) {
         var cats = finance.listCategories(storeId);
@@ -441,7 +414,6 @@ public class DemoDataSeeder implements ApplicationRunner {
                 new BigDecimal("600.00"), 2, today.plusDays(7), false, null, "Coletivo Exemplo", null, null, null));
     }
 
-    /** Distribui os registros pelos últimos 30 dias (apenas na loja demonstrativa). */
     private void spreadDates(Long storeId) {
         List<Long> ids = jdbc.queryForList("select id from orders where store_id = ? and status in ('CONFIRMED','COMPLETED') order by id", Long.class, storeId);
         for (int i = 0; i < ids.size(); i++) {

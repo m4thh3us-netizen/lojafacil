@@ -5,10 +5,6 @@ import { Observable, catchError, firstValueFrom, of, tap } from 'rxjs';
 
 import { Me, Role } from './models';
 
-/**
- * Estado da sessão. A autenticação é por cookie HttpOnly: o frontend nunca vê nem guarda tokens,
- * apenas pergunta ao servidor "quem sou eu?" (/api/auth/me).
- */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
@@ -20,7 +16,6 @@ export class AuthService {
   readonly isManagement = computed(() => this.role() === 'OWNER' || this.role() === 'MANAGER');
   readonly isOwner = computed(() => this.role() === 'OWNER');
 
-  /** Chamado na inicialização do app; 401 significa apenas "não logado". */
   load(): Promise<unknown> {
     return firstValueFrom(this.http.get<Me>('/api/auth/me').pipe(
       tap(me => this.me.set(me)),
@@ -48,7 +43,6 @@ export class AuthService {
     });
   }
 
-  /** Sessão expirada detectada pelo interceptor. */
   sessionExpired(): void {
     if (this.me()) {
       this.me.set(null);

@@ -14,15 +14,10 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
 public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order> {
-
     Optional<Order> findByIdAndStoreId(Long id, Long storeId);
 
     Optional<Order> findByTrackingTokenHash(String hash);
 
-    /**
-     * Trava o pedido para alterar seu estado. Pagamento, expiração e cancelamento sempre travam
-     * o pedido antes das variantes, mantendo uma ordem fixa de travamento (evita deadlocks).
-     */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select o from SalesOrder o where o.id = :id")
     Optional<Order> lockById(Long id);

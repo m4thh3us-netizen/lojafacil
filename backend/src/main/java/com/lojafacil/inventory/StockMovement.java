@@ -18,23 +18,20 @@ import lombok.NoArgsConstructor;
 
 import com.lojafacil.catalog.ProductVariant;
 
-/** Histórico imutável de cada alteração no saldo físico. */
 @Entity
 @Table(name = "stock_movements")
 @Getter
 @NoArgsConstructor
 public class StockMovement {
-
     public enum Type {
-        /** Reposição / compra de fornecedor. */
         ENTRY,
-        /** Saída manual (perda, uso interno, avaria). */
+
         EXIT,
-        /** Ajuste de inventário (contagem), sempre com justificativa. */
+
         ADJUSTMENT,
-        /** Baixa por venda confirmada. */
+
         SALE,
-        /** Devolução recebida e em condições de revenda. */
+
         RETURN
     }
 
@@ -53,7 +50,6 @@ public class StockMovement {
     @Column(nullable = false)
     private Type type;
 
-    /** Positivo para entrada, negativo para saída. */
     private int quantity;
 
     private int balanceAfter;

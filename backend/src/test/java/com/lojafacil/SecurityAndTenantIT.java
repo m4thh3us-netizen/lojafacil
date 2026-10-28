@@ -21,10 +21,8 @@ import com.lojafacil.orders.OrderDtos.CheckoutResponse;
 import com.lojafacil.support.IntegrationTest;
 import com.lojafacil.support.TestData;
 
-/** Isolamento entre lojas e permissões por perfil, testados pela API (com Spring Security ativo). */
 @Import(TestData.class)
 class SecurityAndTenantIT extends IntegrationTest {
-
     @Autowired
     MockMvc mvc;
 
@@ -37,7 +35,7 @@ class SecurityAndTenantIT extends IntegrationTest {
         Long orderIdA = data.order(a.storeId(), orderA.orderNumber()).getId();
 
         var asB = user(TestData.principal(b.owner()));
-        // 404 (e não 403) para não revelar que o registro existe
+
         mvc.perform(get("/api/admin/products/" + productA.id()).with(asB)).andExpect(status().isNotFound());
         mvc.perform(get("/api/admin/orders/" + orderIdA).with(asB)).andExpect(status().isNotFound());
         mvc.perform(post("/api/admin/products/" + productA.id() + "/archive").with(asB).with(csrf()))
@@ -47,7 +45,6 @@ class SecurityAndTenantIT extends IntegrationTest {
                 .andReturn().getResponse().getContentAsString();
         assertThat(listB).doesNotContain(productA.sku());
 
-        // a mesma variante não pode ser comprada pela vitrine de outra loja
         mvc.perform(post("/api/public/stores/" + b.slug() + "/checkout").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""

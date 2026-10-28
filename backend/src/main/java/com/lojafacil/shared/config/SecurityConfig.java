@@ -30,22 +30,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import com.lojafacil.auth.AuthService;
 import com.lojafacil.auth.UserRepository;
 
-/**
- * Configuração de segurança.
- *
- * <h3>Estratégia de autenticação</h3>
- * Sessão no servidor + cookie HttpOnly. O token nunca fica acessível ao JavaScript, o que reduz
- * o impacto de um eventual XSS. Em produção o cookie é marcado como Secure (APP_COOKIE_SECURE=true).
- *
- * <h3>CSRF</h3>
- * Como o navegador envia o cookie de sessão automaticamente, operações que alteram dados exigem o
- * cabeçalho X-XSRF-TOKEN, cujo valor vem do cookie XSRF-TOKEN (padrão "double submit" suportado
- * nativamente pelo HttpClient do Angular). Webhooks são isentos: eles têm validação de assinatura própria.
- */
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
-
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http, SecurityContextRepository contextRepository,
                                             UserRepository users, AppProperties props) throws Exception {
@@ -93,7 +80,6 @@ public class SecurityConfig {
         return new HttpSessionSecurityContextRepository();
     }
 
-    /** BCrypt por padrão (via DelegatingPasswordEncoder, que permite migrar de algoritmo no futuro). */
     @Bean
     PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
@@ -108,7 +94,6 @@ public class SecurityConfig {
         return manager;
     }
 
-    /** CORS restrito às origens configuradas (em produção, o frontend e a API ficam na mesma origem). */
     private CorsConfigurationSource corsConfigurationSource(AppProperties props) {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(props.corsAllowedOrigins() == null ? List.of() : props.corsAllowedOrigins());

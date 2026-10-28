@@ -7,10 +7,6 @@ import { PublicApi } from '../core/api';
 import { Icon } from '../shared/icon';
 import { StoreContext } from './store-context';
 
-/**
- * Moldura da vitrine. As cores do lojista viram variáveis CSS locais (--brand, --brand-ink...),
- * sem afetar o tema pessoal do painel. A vitrine usa sempre superfícies claras próprias.
- */
 @Component({
   selector: 'app-store-shell',
   imports: [RouterOutlet, RouterLink, FormsModule, Icon],

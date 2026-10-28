@@ -4,9 +4,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-/** Monta Pageable com limites seguros (o cliente não consegue pedir 1 milhão de linhas). */
 public final class Pages {
-
     public static final int MAX_SIZE = 100;
 
     private Pages() {

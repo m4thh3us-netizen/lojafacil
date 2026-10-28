@@ -22,13 +22,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-/** Cliente da loja. As observações internas nunca são enviadas à vitrine pública. */
 @Entity
 @Table(name = "customers")
 @Getter
 @Setter
 public class Customer {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -44,7 +42,6 @@ public class Customer {
 
     private String phone;
 
-    /** Observações internas da equipe. */
     private String notes;
 
     private Instant createdAt = Instant.now();
@@ -54,17 +51,11 @@ public class Customer {
     private List<CustomerAddress> addresses = new ArrayList<>();
 
     public interface Repo extends JpaRepository<Customer, Long> {
-
         Optional<Customer> findByIdAndStoreId(Long id, Long storeId);
 
         @Query("select c from Customer c where c.storeId = :storeId and lower(c.email) = lower(:email)")
         Optional<Customer> findByEmail(Long storeId, String email);
 
-        /**
-         * Cria o cliente se o e-mail ainda não existir na loja. Seguro para checkouts simultâneos:
-         * o banco resolve a disputa pelo índice único e nenhum dos dois pedidos falha.
-         * Retorna 1 se inseriu, 0 se já existia.
-         */
         @org.springframework.data.jpa.repository.Modifying
         @Query(value = """
                 insert into customers (store_id, name, email, phone)

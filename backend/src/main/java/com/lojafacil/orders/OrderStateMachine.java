@@ -7,12 +7,7 @@ import java.util.Set;
 
 import com.lojafacil.shared.error.Errors;
 
-/**
- * Transições válidas dos três estados do pedido. Centralizar aqui deixa as regras explícitas,
- * fáceis de testar e impede mudanças incoerentes (ex.: "enviado" para um pedido não pago).
- */
 public final class OrderStateMachine {
-
     private static final Map<OrderStatus, Set<OrderStatus>> ORDER = new EnumMap<>(OrderStatus.class);
     private static final Map<PaymentStatus, Set<PaymentStatus>> PAYMENT = new EnumMap<>(PaymentStatus.class);
     private static final Map<FulfillmentStatus, Set<FulfillmentStatus>> FULFILLMENT = new EnumMap<>(FulfillmentStatus.class);
@@ -24,9 +19,9 @@ public final class OrderStateMachine {
         ORDER.put(OrderStatus.CANCELLED, EnumSet.noneOf(OrderStatus.class));
 
         PAYMENT.put(PaymentStatus.PENDING, EnumSet.of(PaymentStatus.APPROVED, PaymentStatus.DECLINED, PaymentStatus.EXPIRED));
-        // o cliente pode tentar novamente com outro meio após uma recusa
+
         PAYMENT.put(PaymentStatus.DECLINED, EnumSet.of(PaymentStatus.PENDING, PaymentStatus.APPROVED, PaymentStatus.EXPIRED));
-        // pagamento aprovado depois do prazo: tratado como "pagamento tardio"
+
         PAYMENT.put(PaymentStatus.EXPIRED, EnumSet.of(PaymentStatus.APPROVED));
         PAYMENT.put(PaymentStatus.APPROVED, EnumSet.of(PaymentStatus.PARTIALLY_REFUNDED, PaymentStatus.REFUNDED));
         PAYMENT.put(PaymentStatus.PARTIALLY_REFUNDED, EnumSet.of(PaymentStatus.PARTIALLY_REFUNDED, PaymentStatus.REFUNDED));
@@ -61,10 +56,6 @@ public final class OrderStateMachine {
         }
     }
 
-    /**
-     * Regras do atendimento, considerando também o pedido:
-     * só pedidos confirmados (pagos) avançam; retirada e entrega têm caminhos próprios.
-     */
     public static void requireFulfillment(Order order, FulfillmentStatus to) {
         FulfillmentStatus from = order.getFulfillmentStatus();
         if (!canFulfillment(from, to)) {

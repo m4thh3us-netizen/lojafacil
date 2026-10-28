@@ -33,7 +33,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @Tag(name = "Pagamentos")
 public class PaymentController {
-
     public record SimulatedChargeView(UUID id, String storeName, String description, BigDecimal amount,
                                       String status, String returnUrl, boolean simulated) {
     }
@@ -53,8 +52,6 @@ public class PaymentController {
         this.currentUser = currentUser;
     }
 
-    // ------------------------------------------------------------------ configuração (apenas Proprietário)
-
     @GetMapping("/api/admin/payments/integration")
     @PreAuthorize(Access.OWNER)
     public ConfigView config() {
@@ -72,8 +69,6 @@ public class PaymentController {
     public ConnectionTest test() {
         return integrations.test(currentUser.storeId());
     }
-
-    // ------------------------------------------------------------------ webhooks
 
     @Operation(summary = "Webhook do Mercado Pago (assinatura x-signature validada)")
     @PostMapping("/api/webhooks/mercadopago/{storeSlug}")
@@ -97,18 +92,12 @@ public class PaymentController {
         return ResponseEntity.ok(webhooks.receiveSimulator(payload, signature).name());
     }
 
-    // ------------------------------------------------------------------ página de pagamento simulado (pública)
-
     @GetMapping("/api/public/simulator/charges/{id}")
     public SimulatedChargeView simulatedCharge(@PathVariable UUID id) {
         SimulatorCharge c = simulator.get(id);
         return view(c);
     }
 
-    /**
-     * O "cliente" aprova ou recusa na página simulada. O simulador então envia uma notificação assinada,
-     * que percorre exatamente o mesmo caminho de um webhook real (validação, deduplicação, consulta).
-     */
     @PostMapping("/api/public/simulator/charges/{id}/{decision:approve|decline}")
     @ResponseStatus(HttpStatus.OK)
     public SimulatedChargeView decide(@PathVariable UUID id, @PathVariable String decision) {

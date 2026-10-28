@@ -13,7 +13,6 @@ import { Icon } from '../shared/icon';
 
 interface Line { variantId: number; label: string; quantity: number; available: number; }
 
-/** Pedido manual: usa exatamente as mesmas regras do checkout da loja (preço, estoque, reserva). */
 @Component({
   selector: 'app-order-new',
   imports: [FormsModule, RouterLink, BrlPipe, Icon, AddressFields],

@@ -23,16 +23,11 @@ import lombok.Setter;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-/**
- * Devolução de itens. O estoque só é reposto quando o recebimento é confirmado
- * E o produto está em condições de revenda.
- */
 @Entity
 @Table(name = "order_returns")
 @Getter
 @Setter
 public class OrderReturn {
-
     public enum Status { AWAITING_RECEIPT, RECEIVED }
 
     @Id

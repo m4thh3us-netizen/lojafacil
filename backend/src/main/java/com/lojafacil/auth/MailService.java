@@ -10,16 +10,8 @@ import org.springframework.stereotype.Service;
 
 import com.lojafacil.shared.config.AppProperties;
 
-/**
- * Envio de e-mails transacionais. Em desenvolvimento, o Docker Compose sobe o Mailpit
- * (http://localhost:8025), que captura as mensagens sem enviá-las de verdade.
- *
- * O envio é assíncrono para que a resposta HTTP não dependa do servidor SMTP.
- * Os logs nunca incluem o corpo do e-mail, pois ele contém links com tokens.
- */
 @Service
 public class MailService {
-
     private static final Logger log = LoggerFactory.getLogger(MailService.class);
 
     private final JavaMailSender sender;

@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 class ColorContrastTest {
-
     @Test
     void escolheTextoComMaisContraste() {
         assertThat(ColorContrast.bestTextOn("#1F5EFF")).isEqualTo(ColorContrast.LIGHT_TEXT);

@@ -23,7 +23,6 @@ import org.springframework.data.jpa.repository.Query;
 @Getter
 @Setter
 public class Supplier {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -31,7 +30,6 @@ public class Supplier {
     @Column(nullable = false)
     private Long storeId;
 
-    /** Nome fantasia ou razão social. */
     @Column(nullable = false)
     private String name;
 
@@ -44,7 +42,6 @@ public class Supplier {
     private Instant createdAt = Instant.now();
 
     public interface Repo extends JpaRepository<Supplier, Long> {
-
         Optional<Supplier> findByIdAndStoreId(Long id, Long storeId);
 
         List<Supplier> findByStoreIdAndActiveTrueOrderByName(Long storeId);

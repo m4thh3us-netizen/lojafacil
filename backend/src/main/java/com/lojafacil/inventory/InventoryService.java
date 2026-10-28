@@ -18,21 +18,8 @@ import com.lojafacil.shared.audit.AuditService;
 import com.lojafacil.shared.error.Errors;
 import com.lojafacil.shared.security.CurrentUser;
 
-/**
- * Único ponto do sistema que altera saldos de estoque.
- *
- * <h3>Como evitamos vender a última unidade duas vezes</h3>
- * Toda operação trava as linhas das variantes com {@code SELECT ... FOR UPDATE} (ordenadas por id
- * para evitar deadlock) antes de ler o saldo. Uma segunda compra simultânea espera a primeira
- * terminar e então enxerga o saldo já atualizado. Como defesa extra, o banco possui CHECKs que
- * impedem saldo físico ou reservado negativo e reserva maior que o físico.
- *
- * Os métodos públicos de reserva/baixa exigem uma transação aberta pelo chamador (MANDATORY),
- * pois devem ser atômicos com a alteração do pedido.
- */
 @Service
 public class InventoryService {
-
     private final VariantRepository variants;
     private final MovementRepo movements;
     private final ReservationRepo reservations;
@@ -48,8 +35,6 @@ public class InventoryService {
         this.currentUser = currentUser;
     }
 
-    // ------------------------------------------------------------------ movimentações manuais
-
     @Transactional
     public StockMovement entry(Long storeId, Long variantId, int quantity, String reason, Long supplierId) {
         requirePositive(quantity);
@@ -58,7 +43,6 @@ public class InventoryService {
         return record(v, Type.ENTRY, quantity, reason, null, supplierId);
     }
 
-    /** Saída manual: só pode retirar unidades disponíveis (não as reservadas para pedidos). */
     @Transactional
     public StockMovement exit(Long storeId, Long variantId, int quantity, String reason) {
         requirePositive(quantity);
@@ -71,7 +55,6 @@ public class InventoryService {
         return record(v, Type.EXIT, -quantity, reason, null, null);
     }
 
-    /** Ajuste por contagem: define o novo saldo físico, que não pode ficar abaixo do reservado. */
     @Transactional
     public StockMovement adjust(Long storeId, Long variantId, int newPhysicalQty, String reason) {
         if (newPhysicalQty < 0) {
@@ -90,14 +73,6 @@ public class InventoryService {
         return record(v, Type.ADJUSTMENT, delta, reason, null, null);
     }
 
-    // ------------------------------------------------------------------ reservas de pedidos
-
-    /**
-     * Reserva as quantidades para um pedido. Lança INSUFFICIENT_STOCK se qualquer item não estiver
-     * disponível (nada é reservado nesse caso, pois a transação inteira é desfeita).
-     *
-     * @param quantities variantId -> quantidade
-     */
     @Transactional(propagation = Propagation.MANDATORY)
     public void reserve(Long storeId, Long orderId, Map<Long, Integer> quantities, Instant expiresAt) {
         for (ProductVariant v : lockMany(storeId, quantities)) {
@@ -113,7 +88,6 @@ public class InventoryService {
         }
     }
 
-    /** Libera reservas ativas (cancelamento ou expiração). Idempotente: sem reservas ativas, não faz nada. */
     @Transactional(propagation = Propagation.MANDATORY)
     public void releaseReservations(Long storeId, Long orderId) {
         List<StockReservation> active = reservations.findByOrderIdAndStatus(orderId, StockReservation.Status.ACTIVE);
@@ -130,10 +104,6 @@ public class InventoryService {
         }
     }
 
-    /**
-     * Converte reservas ativas em baixa de venda. Retorna false se não havia reservas ativas
-     * (ex.: já expiraram); nesse caso o chamador deve tentar {@link #commitWithoutReservation}.
-     */
     @Transactional(propagation = Propagation.MANDATORY)
     public boolean commitReservations(Long storeId, Long orderId) {
         List<StockReservation> active = reservations.findByOrderIdAndStatus(orderId, StockReservation.Status.ACTIVE);
@@ -153,11 +123,6 @@ public class InventoryService {
         return true;
     }
 
-    /**
-     * Pagamento confirmado depois que a reserva expirou: tenta baixar o estoque se ainda houver
-     * unidades disponíveis. Se faltar qualquer item, NÃO altera nada e retorna false
-     * (o pedido fica marcado para atenção da loja). Nunca gera saldo negativo.
-     */
     @Transactional(propagation = Propagation.MANDATORY)
     public boolean commitWithoutReservation(Long storeId, Long orderId, Map<Long, Integer> quantities) {
         List<ProductVariant> locked = lockMany(storeId, quantities);
@@ -173,7 +138,6 @@ public class InventoryService {
         return true;
     }
 
-    /** Devolução recebida e conferida: repõe o estoque. */
     @Transactional(propagation = Propagation.MANDATORY)
     public void restockReturn(Long storeId, Long orderId, Long variantId, int quantity, String reason) {
         requirePositive(quantity);
@@ -181,8 +145,6 @@ public class InventoryService {
         v.setPhysicalQty(v.getPhysicalQty() + quantity);
         record(v, Type.RETURN, quantity, reason, orderId, null);
     }
-
-    // ------------------------------------------------------------------ auxiliares
 
     private StockMovement record(ProductVariant v, Type type, int qty, String reason, Long orderId, Long supplierId) {
         String safeReason = reason == null || reason.isBlank() ? type.name() : reason.trim();

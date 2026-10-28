@@ -11,13 +11,8 @@ import org.springframework.stereotype.Component;
 
 import com.lojafacil.shared.util.Tokens;
 
-/**
- * Assina e valida as notificações do simulador com HMAC-SHA256, do mesmo jeito que um gateway real.
- * A chave é gerada a cada inicialização (o simulador é local e não precisa de chave fixa).
- */
 @Component
 public class SimulatorSigner {
-
     private final byte[] secret = new byte[32];
 
     public SimulatorSigner() {

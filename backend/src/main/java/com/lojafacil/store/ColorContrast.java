@@ -2,12 +2,7 @@ package com.lojafacil.store;
 
 import java.util.regex.Pattern;
 
-/**
- * Cálculo de contraste segundo a WCAG 2.1. Usado para garantir que o texto sobre as cores
- * escolhidas pelo lojista continue legível (mínimo 4,5:1 para texto normal).
- */
 public final class ColorContrast {
-
     public static final Pattern HEX = Pattern.compile("^#[0-9A-Fa-f]{6}$");
     public static final double MIN_RATIO = 4.5;
     public static final String LIGHT_TEXT = "#FFFFFF";
@@ -22,7 +17,6 @@ public final class ColorContrast {
         return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
     }
 
-    /** Cor de texto (branco ou quase preto) com maior contraste sobre o fundo informado. */
     public static String bestTextOn(String background) {
         return ratio(background, LIGHT_TEXT) >= ratio(background, DARK_TEXT) ? LIGHT_TEXT : DARK_TEXT;
     }

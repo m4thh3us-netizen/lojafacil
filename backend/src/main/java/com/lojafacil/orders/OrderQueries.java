@@ -29,14 +29,11 @@ import com.lojafacil.shared.error.Errors;
 import com.lojafacil.shared.util.Tokens;
 import com.lojafacil.shared.web.PageResponse;
 
-/** Consultas de pedidos (painel e acompanhamento público). */
 @Service
 @Transactional(readOnly = true)
 public class OrderQueries {
-
     static final ZoneId ZONE = ZoneId.of("America/Sao_Paulo");
 
-    /** Na linha do tempo pública aparecem só mudanças de estado (observações internas ficam de fora). */
     private static final Set<OrderHistory.Field> PUBLIC_FIELDS =
             Set.of(OrderHistory.Field.ORDER, OrderHistory.Field.PAYMENT, OrderHistory.Field.FULFILLMENT);
 
@@ -121,7 +118,6 @@ public class OrderQueries {
                 allowed);
     }
 
-    /** Acompanhamento pelo link com token: o número sequencial sozinho não dá acesso. */
     public PublicOrderView publicView(Long storeId, String token) {
         Order o = orders.findByTrackingTokenHash(Tokens.sha256(token))
                 .filter(x -> x.getStoreId().equals(storeId))

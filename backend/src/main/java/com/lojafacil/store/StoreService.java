@@ -15,7 +15,6 @@ import com.lojafacil.store.StoreDtos.StoreSettingsView;
 
 @Service
 public class StoreService {
-
     public enum ImageKind { LOGO, BANNER }
 
     private final StoreRepository stores;
@@ -33,7 +32,6 @@ public class StoreService {
         return stores.findById(storeId).orElseThrow(() -> Errors.notFound("Loja"));
     }
 
-    /** Busca para a vitrine pública: identificador inexistente responde 404. */
     @Transactional(readOnly = true)
     public Store getBySlug(String slug) {
         return stores.findBySlug(slug.toLowerCase(Locale.ROOT)).orElseThrow(() -> Errors.notFound("Loja"));
@@ -118,17 +116,11 @@ public class StoreService {
         return StoreSettingsView.of(s);
     }
 
-    // ------------------------------------------------------------------ aparência do painel
-
     @Transactional(readOnly = true)
     public StoreDtos.AppearanceView appearance(Long storeId) {
         return StoreDtos.AppearanceView.of(get(storeId));
     }
 
-    /**
-     * Grava a fotografia otimizada, mas não altera a loja: assim o lojista pode visualizar
-     * antes de salvar. Fotos enviadas e descartadas são arquivos órfãos pequenos (limitação aceita).
-     */
     public StoreDtos.UploadedPhoto uploadPanelPhoto(Long storeId, MultipartFile file) {
         String path = files.storePhoto(storeId, file, 2400);
         return new StoreDtos.UploadedPhoto(path, StoreDtos.fileUrl(path));
@@ -138,7 +130,7 @@ public class StoreService {
     public StoreDtos.AppearanceView updateAppearance(Long storeId, StoreDtos.AppearanceRequest r) {
         Store s = get(storeId);
         String newPath = r.imagePath() == null || r.imagePath().isBlank() ? null : r.imagePath().trim();
-        // o caminho precisa ser um arquivo desta loja: nunca de outra loja nem fora da pasta de uploads
+
         if (newPath != null && !files.belongsTo(storeId, newPath)) {
             throw Errors.badRequest("INVALID_IMAGE", "Fotografia inválida. Envie a imagem novamente.");
         }

@@ -21,8 +21,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 @Getter
 @Setter
 public class FinancialCategory {
-
-    /** Categorias usadas pelas integrações automáticas (não podem ser desativadas). */
     public enum SystemKey { SALES, FEES, REFUNDS }
 
     @Id

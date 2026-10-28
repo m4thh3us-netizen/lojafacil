@@ -5,10 +5,6 @@ import {
 import { ToastService } from '../core/ui.services';
 import { Icon } from './icon';
 
-/**
- * Modal acessível baseado em <dialog>: foco preso no conteúdo, Esc fecha, foco volta ao botão
- * que abriu. Abertura/fechamento com transição curta (desligada com prefers-reduced-motion).
- */
 @Component({
   selector: 'app-modal',
   imports: [Icon],
@@ -46,7 +42,7 @@ export class Modal {
   readonly title = input('');
   readonly open = input(false, { transform: booleanAttribute });
   readonly wide = input(false, { transform: booleanAttribute });
-  /** Impede fechar com Esc enquanto uma ação está em andamento. */
+
   readonly busy = input(false);
   readonly closed = output<void>();
   private dlg = viewChild.required<ElementRef<HTMLDialogElement>>('dlg');
@@ -74,7 +70,6 @@ export class Modal {
   }
 }
 
-/** Estado vazio com orientação do que fazer a seguir. */
 @Component({
   selector: 'app-empty',
   imports: [Icon],
@@ -93,7 +88,6 @@ export class Empty {
   readonly text = input('');
 }
 
-/** Paginação controlada pelo servidor. */
 @Component({
   selector: 'app-pager',
   imports: [Icon],
@@ -120,7 +114,6 @@ export class Pager {
   readonly change = output<number>();
 }
 
-/** Linhas de skeleton para tabelas (mantém a altura da página durante o carregamento). */
 @Component({
   selector: 'app-table-skeleton',
   changeDetection: ChangeDetectionStrategy.OnPush,

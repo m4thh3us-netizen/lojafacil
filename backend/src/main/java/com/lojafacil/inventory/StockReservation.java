@@ -14,17 +14,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * Reserva de estoque para um pedido aguardando pagamento.
- * ACTIVE -> CONSUMED (pagamento aprovado: vira baixa) ou ACTIVE -> RELEASED (cancelado/expirado).
- */
 @Entity
 @Table(name = "stock_reservations")
 @Getter
 @Setter
 @NoArgsConstructor
 public class StockReservation {
-
     public enum Status { ACTIVE, RELEASED, CONSUMED }
 
     @Id

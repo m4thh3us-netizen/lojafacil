@@ -9,16 +9,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import com.lojafacil.shared.util.Tokens;
 
-/**
- * Validação da assinatura dos webhooks do Mercado Pago.
- *
- * O cabeçalho {@code x-signature} tem o formato {@code ts=<timestamp>,v1=<hash>}.
- * O hash é um HMAC-SHA256 (hex) do "manifesto"
- * {@code id:<data.id>;request-id:<x-request-id>;ts:<ts>;}, usando a assinatura secreta
- * configurada em "Suas integrações > Webhooks". Partes ausentes são omitidas do manifesto.
- */
 public final class MercadoPagoSignature {
-
     private MercadoPagoSignature() {
     }
 
@@ -48,7 +39,6 @@ public final class MercadoPagoSignature {
     static String manifest(String dataId, String xRequestId, String ts) {
         StringBuilder sb = new StringBuilder();
         if (dataId != null && !dataId.isBlank()) {
-            // a documentação orienta usar o id em minúsculas quando for alfanumérico
             sb.append("id:").append(dataId.toLowerCase(Locale.ROOT)).append(';');
         }
         if (xRequestId != null && !xRequestId.isBlank()) {

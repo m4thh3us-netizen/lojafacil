@@ -11,14 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.lojafacil.auth.Role;
 
-/**
- * Usuário autenticado guardado na sessão.
- *
- * O storeId vem SEMPRE daqui (do servidor), nunca de um parâmetro enviado pelo navegador.
- * É assim que garantimos o isolamento entre lojas.
- */
 public final class AuthUser implements UserDetails, CredentialsContainer, Serializable {
-
     private final Long id;
     private final Long storeId;
     private final String email;

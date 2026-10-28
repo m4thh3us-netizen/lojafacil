@@ -10,12 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-/**
- * O Spring Security gera o token CSRF de forma preguiçosa. Este filtro força a geração em toda
- * resposta, garantindo que o cookie XSRF-TOKEN exista antes do primeiro POST do frontend.
- */
 class CsrfCookieFilter extends OncePerRequestFilter {
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {

@@ -29,16 +29,8 @@ import com.lojafacil.shared.util.Tokens;
 import com.lojafacil.store.Store;
 import com.lojafacil.store.StoreRepository;
 
-/**
- * Regras do ciclo de vida do pedido.
- *
- * Métodos marcados com Propagation.MANDATORY são etapas de um processo maior (checkout, pagamento,
- * expiração) e precisam rodar dentro da transação de quem os chama, recebendo o pedido já travado.
- */
 @Service
 public class OrderService {
-
-    /** Dados necessários para criar um pedido, comuns à vitrine e ao pedido manual. */
     public record PlaceOrderCommand(Long storeId, Order.Channel channel, Long customerId, String name, String email,
                                     String phone, DeliveryMethod deliveryMethod, AddressData address,
                                     List<CartLine> items, String notes, boolean requireVisible) {
@@ -71,12 +63,6 @@ public class OrderService {
         this.currentUser = currentUser;
     }
 
-    // ------------------------------------------------------------------ criação
-
-    /**
-     * Cria o pedido e reserva o estoque. Preços, descontos, entrega e total são calculados aqui
-     * a partir do banco. Se faltar estoque, nada é gravado (a transação é desfeita).
-     */
     @Transactional(propagation = Propagation.MANDATORY)
     public PlacedOrder place(PlaceOrderCommand cmd) {
         Store store = stores.findById(cmd.storeId()).orElseThrow(() -> Errors.notFound("Loja"));
@@ -108,7 +94,6 @@ public class OrderService {
         order.setTotal(order.getDeliveryFee());
         orders.save(order);
 
-        // Reserva com as variantes travadas; depois lê as mesmas entidades para montar os itens.
         inventory.reserve(store.getId(), order.getId(), quantities, order.getReservationExpiresAt());
         Map<Long, ProductVariant> locked = variants.findAllById(quantities.keySet()).stream()
                 .collect(Collectors.toMap(ProductVariant::getId, Function.identity()));
@@ -121,18 +106,12 @@ public class OrderService {
         return new PlacedOrder(order, token);
     }
 
-    // ------------------------------------------------------------------ pagamento (chamado pelo módulo de pagamentos)
-
-    /**
-     * Pagamento aprovado. Converte a reserva em baixa (uma única vez) e confirma o pedido.
-     * Trata o caso de pagamento após a expiração da reserva sem permitir estoque negativo.
-     */
     @Transactional(propagation = Propagation.MANDATORY)
     public void onPaymentApproved(Order order, String note) {
         PaymentStatus before = order.getPaymentStatus();
         setPayment(order, PaymentStatus.APPROVED, note);
         if (order.isStockCommitted()) {
-            return; // notificação repetida: estoque já baixado
+            return;
         }
         Map<Long, Integer> quantities = quantitiesOf(order);
 
@@ -147,7 +126,6 @@ public class OrderService {
                 log(order, OrderHistory.Field.NOTE, null, null, order.getAttentionReason());
             }
         } else if (order.getStatus() == OrderStatus.CANCELLED) {
-            // Pagamento tardio (reserva expirada ou pedido cancelado antes da aprovação)
             if (inventory.commitWithoutReservation(order.getStoreId(), order.getId(), quantities)) {
                 order.setStockCommitted(true);
                 order.setStatus(OrderStatus.CONFIRMED);
@@ -171,7 +149,6 @@ public class OrderService {
         setPayment(order, status, note);
     }
 
-    /** Reserva expirada sem pagamento: libera o estoque e cancela o pedido. */
     @Transactional(propagation = Propagation.MANDATORY)
     public boolean expire(Order order) {
         if (order.getStatus() != OrderStatus.OPEN || order.getPaymentStatus().isPaid()) {
@@ -183,7 +160,6 @@ public class OrderService {
         return true;
     }
 
-    /** Cancelamento de pedido ainda não pago. */
     @Transactional(propagation = Propagation.MANDATORY)
     public void cancelUnpaid(Order order, String reason) {
         if (order.getPaymentStatus().isPaid()) {
@@ -198,10 +174,6 @@ public class OrderService {
         audit.record(order.getStoreId(), "ORDER", order.getId(), "ORDER_CANCELLED", "#" + order.getNumber() + ": " + reason);
     }
 
-    /**
-     * Cancelamento de pedido pago, depois do reembolso integral. Como os itens não saíram da loja
-     * (atendimento antes do envio/retirada), eles retornam ao estoque.
-     */
     @Transactional(propagation = Propagation.MANDATORY)
     public void cancelAfterFullRefund(Order order, String reason) {
         requireCancellableAfterPayment(order);
@@ -225,8 +197,6 @@ public class OrderService {
             throw Errors.rule("ALREADY_SHIPPED", "O pedido já foi enviado ou entregue. Registre uma devolução em vez de cancelar.");
         }
     }
-
-    // ------------------------------------------------------------------ atendimento (painel)
 
     @Transactional
     public Order updateFulfillment(Long storeId, Long orderId, FulfillmentStatus to, String note) {
@@ -258,8 +228,6 @@ public class OrderService {
         order.setRequiresAttention(false);
         log(order, OrderHistory.Field.NOTE, null, null, "Pendência resolvida: " + note);
     }
-
-    // ------------------------------------------------------------------ devoluções
 
     @Transactional
     public OrderReturn registerReturn(Long storeId, Long orderId, ReturnRequest req) {
@@ -322,7 +290,6 @@ public class OrderService {
         return ret;
     }
 
-    /** Recebimento conferido: só repõe estoque se o produto estiver em condições de revenda. */
     private void receive(Order order, OrderReturn ret, boolean conditionOk, String note) {
         ret.setStatus(OrderReturn.Status.RECEIVED);
         ret.setReceivedAt(Instant.now());
@@ -341,12 +308,10 @@ public class OrderService {
                         : "Itens recebidos sem condições de revenda (estoque não reposto)" + (note != null ? ": " + note : ""));
     }
 
-    // ------------------------------------------------------------------ auxiliares
-
     public Order lockForStore(Long storeId, Long orderId) {
         Order order = orders.lockById(orderId).orElseThrow(() -> Errors.notFound("Pedido"));
         if (!order.getStoreId().equals(storeId)) {
-            throw Errors.notFound("Pedido"); // nunca revela pedidos de outra loja
+            throw Errors.notFound("Pedido");
         }
         return order;
     }

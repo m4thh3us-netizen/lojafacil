@@ -28,10 +28,8 @@ import com.lojafacil.shared.util.Tokens;
 import com.lojafacil.store.Store;
 import com.lojafacil.store.StoreRepository;
 
-/** Regras de cadastro, recuperação de senha e convites. */
 @Service
 public class AuthService implements UserDetailsService {
-
     static final Duration RESET_TOKEN_TTL = Duration.ofMinutes(30);
     static final Duration INVITE_TTL = Duration.ofDays(7);
 
@@ -59,7 +57,6 @@ public class AuthService implements UserDetailsService {
         this.events = events;
     }
 
-    /** Usado pelo Spring Security durante o login. */
     @Override
     @Transactional(readOnly = true)
     public AuthUser loadUserByUsername(String email) {
@@ -81,7 +78,6 @@ public class AuthService implements UserDetailsService {
         return new SlugAvailability(slug, true, null);
     }
 
-    /** Cadastro inicial: cria a loja e o usuário proprietário na mesma transação. */
     @Transactional
     public User register(RegisterRequest req) {
         if (!req.owner().password().equals(req.owner().passwordConfirmation())) {
@@ -129,10 +125,6 @@ public class AuthService implements UserDetailsService {
         return new MeResponse(UserView.of(u), new StoreSummary(s.getId(), s.getName(), s.getSlug(), s.isDemo()), props.demoMode());
     }
 
-    /**
-     * Gera o link de redefinição. Responde da mesma forma exista ou não o e-mail,
-     * para não permitir descobrir quais e-mails estão cadastrados.
-     */
     @Transactional
     public void requestPasswordReset(String rawEmail) {
         users.findByEmailIgnoreCase(normalizeEmail(rawEmail)).filter(User::isActive).ifPresent(user -> {

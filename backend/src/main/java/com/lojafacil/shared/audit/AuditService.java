@@ -12,14 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.lojafacil.shared.security.CurrentUser;
 
-/**
- * Grava a trilha de auditoria. Roda na mesma transação da operação auditada:
- * se a operação falhar, o registro de auditoria também é desfeito (sem "auditoria fantasma").
- * Nunca registre senhas, tokens ou credenciais em {@code details}.
- */
 @Service
 public class AuditService {
-
     private final AuditLogRepository repository;
     private final CurrentUser currentUser;
 

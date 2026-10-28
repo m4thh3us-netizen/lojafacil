@@ -13,18 +13,8 @@ import org.springframework.stereotype.Component;
 import com.lojafacil.inventory.InventoryRepositories.ReservationRepo;
 import com.lojafacil.shared.config.AppProperties;
 
-/**
- * Tarefas periódicas:
- * <ul>
- *   <li>Expiração de reservas: libera o estoque de pedidos não pagos no prazo.</li>
- *   <li>Conciliação: confere no provedor pagamentos pendentes antigos (cobre webhooks perdidos).</li>
- * </ul>
- * Cada pedido é processado na própria transação, com o pedido travado; rodar em duas instâncias
- * ao mesmo tempo não duplica efeitos, pois as operações são idempotentes.
- */
 @Component
 public class PaymentJobs {
-
     private static final Logger log = LoggerFactory.getLogger(PaymentJobs.class);
 
     private final ReservationRepo reservations;

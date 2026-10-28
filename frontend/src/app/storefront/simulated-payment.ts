@@ -5,11 +5,6 @@ import { BrlPipe } from '../core/format';
 import { errorMessage } from '../core/ui.services';
 import { Icon } from '../shared/icon';
 
-/**
- * Página do provedor SIMULADO. Faz o papel da página de pagamento de um gateway real:
- * a decisão gera uma notificação assinada que o backend valida e processa como um webhook.
- * Nenhum dado de cartão é solicitado.
- */
 @Component({
   selector: 'app-simulated-payment',
   imports: [BrlPipe, Icon],

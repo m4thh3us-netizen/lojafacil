@@ -1,11 +1,3 @@
--- =====================================================================
--- LojaFácil - esquema inicial
--- Convenções:
---   * valores monetários: NUMERIC(14,2) (nunca float/double)
---   * toda tabela de negócio possui store_id para isolamento entre lojas
---   * CHECKs no banco reforçam regras críticas (ex.: estoque nunca negativo)
--- =====================================================================
-
 CREATE TABLE stores (
     id                     BIGSERIAL PRIMARY KEY,
     slug                   VARCHAR(60)  NOT NULL UNIQUE,
@@ -85,7 +77,6 @@ CREATE TABLE audit_log (
 );
 CREATE INDEX ix_audit_store_date ON audit_log (store_id, created_at DESC);
 
--- ---------------------------------------------------------------- catálogo
 CREATE TABLE categories (
     id        BIGSERIAL PRIMARY KEY,
     store_id  BIGINT      NOT NULL REFERENCES stores(id),
@@ -107,7 +98,6 @@ CREATE TABLE products (
     cost_price    NUMERIC(14,2) NOT NULL CHECK (cost_price >= 0),
     sale_price    NUMERIC(14,2) NOT NULL CHECK (sale_price > 0),
     promo_price   NUMERIC(14,2) CHECK (promo_price > 0),
-    -- preço praticado (promocional, se houver); mantido pela aplicação para filtrar/ordenar
     effective_price NUMERIC(14,2) NOT NULL,
     unit         VARCHAR(10)   NOT NULL DEFAULT 'UN',
     min_stock     INT           NOT NULL DEFAULT 0 CHECK (min_stock >= 0),
@@ -136,7 +126,6 @@ CREATE TABLE product_images (
 );
 CREATE INDEX ix_product_images_product ON product_images (product_id);
 
--- Toda unidade vendável é uma variante. Produto simples = uma única variante padrão.
 CREATE TABLE product_variants (
     id              BIGSERIAL PRIMARY KEY,
     store_id        BIGINT        NOT NULL REFERENCES stores(id),
@@ -151,14 +140,12 @@ CREATE TABLE product_variants (
     active          BOOLEAN       NOT NULL DEFAULT TRUE,
     version         BIGINT        NOT NULL DEFAULT 0,
     UNIQUE (store_id, sku),
-    -- regras de estoque garantidas pelo próprio banco
     CONSTRAINT ck_variant_physical_non_negative CHECK (physical_qty >= 0),
     CONSTRAINT ck_variant_reserved_non_negative CHECK (reserved_qty >= 0),
     CONSTRAINT ck_variant_reserved_le_physical  CHECK (reserved_qty <= physical_qty)
 );
 CREATE INDEX ix_variants_product ON product_variants (product_id);
 
--- ---------------------------------------------------------------- clientes e fornecedores
 CREATE TABLE customers (
     id          BIGSERIAL PRIMARY KEY,
     store_id    BIGINT       NOT NULL REFERENCES stores(id),
@@ -198,7 +185,6 @@ CREATE TABLE suppliers (
 );
 CREATE INDEX ix_suppliers_store ON suppliers (store_id);
 
--- ---------------------------------------------------------------- pedidos
 CREATE TABLE orders (
     id                     BIGSERIAL PRIMARY KEY,
     store_id               BIGINT        NOT NULL REFERENCES stores(id),
@@ -240,7 +226,6 @@ CREATE TABLE order_items (
     order_id       BIGINT        NOT NULL REFERENCES orders(id),
     product_id     BIGINT        NOT NULL REFERENCES products(id),
     variant_id     BIGINT        NOT NULL REFERENCES product_variants(id),
-    -- fotografia dos dados no momento da venda
     product_name   VARCHAR(160)  NOT NULL,
     variant_name   VARCHAR(100),
     sku            VARCHAR(60)   NOT NULL,
@@ -288,13 +273,12 @@ CREATE TABLE order_return_items (
     quantity       INT    NOT NULL CHECK (quantity > 0)
 );
 
--- ---------------------------------------------------------------- estoque
 CREATE TABLE stock_movements (
     id             BIGSERIAL PRIMARY KEY,
     store_id       BIGINT       NOT NULL REFERENCES stores(id),
     variant_id     BIGINT       NOT NULL REFERENCES product_variants(id),
     type           VARCHAR(20)  NOT NULL CHECK (type IN ('ENTRY','EXIT','ADJUSTMENT','SALE','RETURN')),
-    quantity       INT          NOT NULL,           -- positivo entra, negativo sai
+    quantity       INT          NOT NULL,
     balance_after  INT          NOT NULL CHECK (balance_after >= 0),
     reason         VARCHAR(300) NOT NULL,
     order_id       BIGINT       REFERENCES orders(id),
@@ -319,7 +303,6 @@ CREATE TABLE stock_reservations (
 CREATE INDEX ix_reservations_active_exp ON stock_reservations (expires_at) WHERE status = 'ACTIVE';
 CREATE INDEX ix_reservations_order ON stock_reservations (order_id);
 
--- ---------------------------------------------------------------- pagamentos
 CREATE TABLE payment_integrations (
     id                  BIGSERIAL PRIMARY KEY,
     store_id            BIGINT      NOT NULL UNIQUE REFERENCES stores(id),
@@ -338,7 +321,7 @@ CREATE TABLE payments (
     store_id              BIGINT        NOT NULL REFERENCES stores(id),
     order_id              BIGINT        NOT NULL REFERENCES orders(id),
     provider              VARCHAR(20)   NOT NULL,
-    public_id             UUID          NOT NULL UNIQUE,     -- external_reference enviado ao provedor
+    public_id             UUID          NOT NULL UNIQUE,
     idempotency_key       UUID          NOT NULL UNIQUE,
     provider_payment_id   VARCHAR(80),
     provider_checkout_id  VARCHAR(120),
@@ -360,7 +343,6 @@ CREATE UNIQUE INDEX ux_payments_provider_id ON payments (provider, provider_paym
 CREATE INDEX ix_payments_order ON payments (order_id);
 CREATE INDEX ix_payments_status ON payments (status);
 
--- Notificações recebidas (deduplicação de webhooks repetidos)
 CREATE TABLE webhook_events (
     id            BIGSERIAL PRIMARY KEY,
     provider      VARCHAR(20)  NOT NULL,
@@ -373,8 +355,6 @@ CREATE TABLE webhook_events (
     UNIQUE (provider, event_key)
 );
 
--- "Lado do provedor" do simulador local: imita um gateway externo, com estado próprio.
--- Usado quando a loja não configurou o Mercado Pago (pagamentos marcados como SIMULADOS).
 CREATE TABLE simulator_charges (
     id                  UUID          PRIMARY KEY,
     store_id            BIGINT        NOT NULL REFERENCES stores(id),
@@ -403,7 +383,6 @@ CREATE TABLE refunds (
 );
 CREATE INDEX ix_refunds_payment ON refunds (payment_id);
 
--- ---------------------------------------------------------------- financeiro
 CREATE TABLE financial_categories (
     id          BIGSERIAL PRIMARY KEY,
     store_id    BIGINT      NOT NULL REFERENCES stores(id),
@@ -443,7 +422,6 @@ CREATE TABLE financial_entries (
     version             BIGINT        NOT NULL DEFAULT 0,
     CONSTRAINT ck_fin_paid_date CHECK ((status = 'PAID') = (paid_date IS NOT NULL))
 );
--- Garante que cada evento de integração (pagamento, taxa, reembolso) gere no máximo um lançamento
 CREATE UNIQUE INDEX ux_fin_entries_source ON financial_entries (store_id, source_type, source_ref) WHERE source_ref IS NOT NULL;
 CREATE INDEX ix_fin_entries_store_due ON financial_entries (store_id, due_date);
 CREATE INDEX ix_fin_entries_store_paid ON financial_entries (store_id, paid_date);

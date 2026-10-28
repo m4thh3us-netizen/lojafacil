@@ -34,7 +34,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @PreAuthorize(Access.OPERATIONS)
 @Tag(name = "Clientes e fornecedores")
 public class CustomerController {
-
     private final CustomerService service;
     private final CurrentUser currentUser;
 

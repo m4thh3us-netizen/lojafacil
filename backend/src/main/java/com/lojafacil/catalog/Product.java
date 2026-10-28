@@ -23,16 +23,11 @@ import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * Produto do catálogo. Os dados de venda (preço, custo) ficam aqui; o estoque fica nas variantes.
- * Um produto simples tem exatamente uma variante "padrão" com o mesmo SKU do produto.
- */
 @Entity
 @Table(name = "products")
 @Getter
 @Setter
 public class Product {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -100,7 +95,6 @@ public class Product {
         updatedAt = Instant.now();
     }
 
-    /** Pode ser vendido: ativo, não arquivado. (Visibilidade afeta apenas a vitrine.) */
     public boolean isSellable() {
         return active && archivedAt == null;
     }

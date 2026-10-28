@@ -15,13 +15,11 @@ import lombok.Setter;
 
 import com.lojafacil.shared.security.AuthUser;
 
-/** Usuário administrativo. Na primeira versão cada usuário pertence a uma única loja. */
 @Entity
 @Table(name = "users")
 @Getter
 @Setter
 public class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

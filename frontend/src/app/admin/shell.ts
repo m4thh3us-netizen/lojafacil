@@ -11,11 +11,6 @@ import { Brand, ThemeToggle } from '../shared/theme-toggle';
 
 interface NavItem { path: string; label: string; icon: string; exact?: boolean; management?: boolean; }
 
-/**
- * Estrutura do painel: fundo (fotografia ou cor da loja) fixo atrás de tudo e cabeçalho em
- * grupos de vidro — marca à esquerda, navegação em cápsulas ao centro, ações e perfil à direita.
- * Em telas menores a navegação vira um menu recolhível.
- */
 @Component({
   selector: 'app-admin-shell',
   imports: [RouterOutlet, RouterLink, RouterLinkActive, Icon, Brand, ThemeToggle],
@@ -128,11 +123,9 @@ interface NavItem { path: string; label: string; icon: string; exact?: boolean; 
     .nav-extra { display: none; }
     .preview-note { display: inline-flex; align-items: center; gap: 8px; margin-top: 2px; padding: 6px 14px; border-radius: 999px; background: var(--warning-soft); color: var(--warning); font-size: .82rem; font-weight: 600; border: 1px solid var(--warning); }
 
-    /* Pontos de quebra calculados para a navegação nunca encostar nas ações */
-    @media (max-width: 1700px) { .nav a app-icon { display: none !important; } }
+        @media (max-width: 1700px) { .nav a app-icon { display: none !important; } }
     @media (max-width: 1380px) { .who { display: none; } .user-btn { padding: 0 8px 0 4px; } }
-    /* Abaixo de 1240px a navegação não cabe numa linha: vira menu recolhível, com fundo sólido */
-    @media (max-width: 1240px) {
+        @media (max-width: 1240px) {
       .nav a app-icon { display: inline-flex !important; }
       .burger { display: inline-flex; }
       .actions { margin-left: auto; }
@@ -179,7 +172,6 @@ export class AdminShell {
   readonly initials = computed(() => (this.me()?.user.fullName ?? '').split(' ').filter(Boolean).slice(0, 2).map(p => p[0]).join('').toUpperCase());
   readonly roleLabel = computed(() => LABELS[this.me()?.user.role ?? ''] ?? '');
 
-  /** Fundo do painel: fotografia com posição escolhida + camada escura uniforme, ou cor sólida. */
   readonly bg = computed(() => {
     const a = this.appearance.current();
     const photo = a.mode === 'PHOTO' && a.imageUrl;

@@ -8,7 +8,6 @@ export function brl(v: number | null | undefined): string {
   return v === null || v === undefined ? '—' : BRL.format(Number(v));
 }
 
-/** Datas "YYYY-MM-DD" (sem fuso) são exibidas como estão; instantes ISO são convertidos para o horário local. */
 export function date(v: string | null | undefined): string {
   if (!v) return '—';
   if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
@@ -42,8 +41,6 @@ export class BrlPipe implements PipeTransform {
 export class DatePipeBr implements PipeTransform {
   transform(v: string | null | undefined, withTime = false): string { return withTime ? dateTime(v) : date(v); }
 }
-
-// ------------------------------------------------------------------ rótulos de estados
 
 export const LABELS: Record<string, string> = {
   OPEN: 'Aberto', CONFIRMED: 'Confirmado', CANCELLED: 'Cancelado', COMPLETED: 'Concluído',

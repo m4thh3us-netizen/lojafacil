@@ -1,6 +1,5 @@
 package com.lojafacil.finance;
 
-/** INCOME = entrada de dinheiro (receita/recebimento); EXPENSE = saída (despesa/pagamento). */
 public enum EntryType {
     INCOME, EXPENSE;
 

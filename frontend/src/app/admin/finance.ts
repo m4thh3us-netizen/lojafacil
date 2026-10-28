@@ -255,7 +255,6 @@ export class FinancePage {
 
   openNew(type: EntryType) { this.entry = this.blankEntry(type); this.error.set(''); this.installmentPreview.set([]); this.newOpen.set(true); }
 
-  /** Prévia das parcelas (o cálculo oficial é feito no servidor com BigDecimal, com a mesma regra). */
   updatePreview() {
     const total = Math.round((this.entry.totalAmount ?? 0) * 100);
     const n = Math.max(1, Math.min(60, Math.floor(this.entry.installments || 1)));

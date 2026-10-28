@@ -27,16 +27,11 @@ import org.springframework.data.jpa.repository.Query;
 
 import com.lojafacil.orders.PaymentStatus;
 
-/**
- * Cobrança de um pedido. Nunca guardamos dados de cartão: o cliente paga na página do provedor.
- * {@code publicId} é a referência externa enviada ao provedor para associar o pagamento ao pedido.
- */
 @Entity
 @Table(name = "payments")
 @Getter
 @Setter
 public class Payment {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -54,7 +49,6 @@ public class Payment {
     @Column(nullable = false, unique = true)
     private UUID publicId = UUID.randomUUID();
 
-    /** Enviada ao provedor para que tentativas repetidas não criem cobranças duplicadas. */
     @Column(nullable = false, unique = true)
     private UUID idempotencyKey = UUID.randomUUID();
 
@@ -88,7 +82,6 @@ public class Payment {
     }
 
     public interface Repo extends JpaRepository<Payment, Long> {
-
         List<Payment> findByOrderIdOrderByCreatedAt(Long orderId);
 
         Optional<Payment> findFirstByOrderIdOrderByCreatedAtDesc(Long orderId);
@@ -99,7 +92,6 @@ public class Payment {
         @Query("select p from Payment p where p.id = :id")
         Optional<Payment> lockById(Long id);
 
-        /** Pagamentos online pendentes há algum tempo: conferidos no provedor caso um webhook tenha se perdido. */
         @Query("""
                 select p from Payment p where p.status = com.lojafacil.orders.PaymentStatus.PENDING
                   and p.provider <> com.lojafacil.payments.ProviderType.MANUAL and p.createdAt < :before

@@ -20,12 +20,11 @@ import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.Setter;
 
-@Entity(name = "SalesOrder") // "Order" é palavra reservada em JPQL
+@Entity(name = "SalesOrder")
 @Table(name = "orders")
 @Getter
 @Setter
 public class Order {
-
     public enum Channel { ONLINE, MANUAL }
 
     @Id
@@ -35,10 +34,8 @@ public class Order {
     @Column(nullable = false)
     private Long storeId;
 
-    /** Número sequencial por loja, exibido ao cliente. Não dá acesso ao pedido sozinho. */
     private int number;
 
-    /** Hash do token do link de acompanhamento (o token em si só existe no link enviado ao cliente). */
     @Column(nullable = false)
     private String trackingTokenHash;
 
@@ -69,10 +66,8 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private FulfillmentStatus fulfillmentStatus = FulfillmentStatus.AWAITING;
 
-    /** Garante que a baixa de estoque da venda acontece uma única vez. */
     private boolean stockCommitted;
 
-    /** Situações que exigem ação humana (ex.: pagamento aprovado sem estoque). */
     private boolean requiresAttention;
     private String attentionReason;
 

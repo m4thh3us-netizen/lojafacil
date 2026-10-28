@@ -2,7 +2,6 @@ import { Routes } from '@angular/router';
 
 import { authGuard, guestGuard, roleGuard } from './core/http';
 
-/** Todas as telas são carregadas sob demanda (lazy loading), reduzindo o pacote inicial. */
 export const routes: Routes = [
   { path: '', loadComponent: () => import('./public/landing').then(m => m.Landing), title: 'LojaFácil' },
   { path: 'login', canActivate: [guestGuard], loadComponent: () => import('./public/auth-pages').then(m => m.LoginPage), title: 'Entrar · LojaFácil' },

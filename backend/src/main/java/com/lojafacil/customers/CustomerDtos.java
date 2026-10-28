@@ -11,7 +11,6 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public final class CustomerDtos {
-
     private CustomerDtos() {
     }
 
@@ -24,7 +23,6 @@ public final class CustomerDtos {
             @NotBlank(message = "Informe a cidade.") @Size(max = 80) String city,
             @NotBlank(message = "Informe o estado.") @Pattern(regexp = "^[A-Za-z]{2}$", message = "Use a sigla (ex.: SP).") String state,
             @NotBlank(message = "Informe o CEP.") @Pattern(regexp = "^\\d{5}-?\\d{3}$", message = "CEP inválido.") String zip) {
-
         public String formatted() {
             return street.trim() + ", " + number.trim() + (complement != null && !complement.isBlank() ? " - " + complement.trim() : "")
                     + " - " + district.trim() + ", " + city.trim() + "/" + state.toUpperCase() + " - CEP " + zip;

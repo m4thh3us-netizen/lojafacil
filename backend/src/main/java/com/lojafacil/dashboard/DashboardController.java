@@ -18,7 +18,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @Tag(name = "Dashboard")
 public class DashboardController {
-
     private final DashboardService dashboard;
     private final CurrentUser currentUser;
     private final StoreService stores;

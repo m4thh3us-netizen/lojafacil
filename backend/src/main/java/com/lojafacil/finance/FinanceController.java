@@ -34,13 +34,11 @@ import com.lojafacil.shared.web.Pages;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-/** Financeiro: disponível para Proprietário e Gerente (Operador não acessa). */
 @RestController
 @RequestMapping("/api/admin/finance")
 @PreAuthorize(Access.MANAGEMENT)
 @Tag(name = "Financeiro")
 public class FinanceController {
-
     private final FinanceService finance;
     private final CurrentUser currentUser;
 

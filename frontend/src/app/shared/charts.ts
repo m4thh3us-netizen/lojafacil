@@ -2,20 +2,10 @@ import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, WritableSig
 
 import { brl, date } from '../core/format';
 
-/**
- * Gráficos em SVG puro (sem biblioteca externa).
- * Regras seguidas: um único eixo Y, marcas finas, grade discreta, tooltip ao passar o mouse
- * ou focar pelo teclado, e alternativa em tabela para leitores de tela.
- */
-
 const W = 640;
 const H = 220;
 const PAD = { l: 56, r: 12, t: 12, b: 26 };
 
-/**
- * A largura interna do SVG acompanha a largura real do gráfico. Assim os textos dos eixos mantêm
- * o mesmo tamanho em qualquer tela, em vez de serem ampliados junto com o desenho.
- */
 function trackWidth(): WritableSignal<number> {
   const width = signal(W);
   const host = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
@@ -90,7 +80,7 @@ export class BarChart {
   readonly bars = computed(() => {
     const d = this.data();
     const slot = (this.width() - PAD.l - PAD.r) / Math.max(d.length, 1);
-    const w = Math.max(2, Math.min(28, slot - 2)); // 2px de respiro entre barras
+    const w = Math.max(2, Math.min(28, slot - 2));
     const every = Math.ceil(d.length / Math.max(4, Math.floor(this.width() / 80)));
     return d.map((p, i) => {
       const h = (p.value / this.max()) * (H - PAD.t - PAD.b);
@@ -176,7 +166,7 @@ export class LineChart {
     const { min, max } = this.range();
     const vals = min < 0 ? [min, 0, max] : [0, max / 2, max];
     const ticks = vals.map(v => ({ y: this.yAt(v), label: compact(v), zero: v === 0 }));
-    // evita rótulos sobrepostos: some o que estiver colado na linha do zero
+
     const zeroY = this.yAt(0);
     return ticks.map(t => (!t.zero && Math.abs(t.y - zeroY) < 14 ? { ...t, label: '' } : t));
   });

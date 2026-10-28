@@ -11,7 +11,6 @@ export function addressComplete(a: Address): boolean {
   return !!(a.street && a.number && a.district && a.city && /^[A-Za-z]{2}$/.test(a.state) && /^\d{5}-?\d{3}$/.test(a.zip));
 }
 
-/** Campos de endereço reutilizados no checkout, pedido manual e cadastro de clientes. */
 @Component({
   selector: 'app-address-fields',
   imports: [FormsModule],

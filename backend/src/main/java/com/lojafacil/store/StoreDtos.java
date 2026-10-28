@@ -13,7 +13,6 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public final class StoreDtos {
-
     private StoreDtos() {
     }
 
@@ -47,7 +46,6 @@ public final class StoreDtos {
             String addressLine, String addressCity, String addressState, String addressZip, String serviceHours,
             boolean pickupEnabled, boolean localDeliveryEnabled, BigDecimal localDeliveryFee,
             int reservationMinutes, boolean demo) {
-
         public static StoreSettingsView of(Store s) {
             return new StoreSettingsView(s.getId(), s.getSlug(), s.getName(), s.getDescription(),
                     fileUrl(s.getLogoPath()), fileUrl(s.getBannerPath()),
@@ -60,14 +58,12 @@ public final class StoreDtos {
         }
     }
 
-    /** Dados públicos da vitrine: sem configurações internas (ex.: prazo de reserva). */
     public record PublicStoreView(
             String slug, String name, String description, String logoUrl, String bannerUrl,
             String primaryColor, String secondaryColor, String onPrimaryColor, String onSecondaryColor,
             String contactEmail, String contactPhone, String whatsapp, String instagram, String facebook,
             String address, String serviceHours,
             boolean pickupEnabled, boolean localDeliveryEnabled, BigDecimal localDeliveryFee, boolean demo) {
-
         public static PublicStoreView of(Store s) {
             String address = s.getAddressLine() == null ? null
                     : s.getAddressLine() + (s.getAddressCity() != null ? " - " + s.getAddressCity() : "")
@@ -82,11 +78,9 @@ public final class StoreDtos {
         }
     }
 
-    // ------------------------------------------------------------------ aparência do painel
-
     public record AppearanceRequest(
             @NotNull Store.PanelBackground mode,
-            /** Caminho devolvido pelo upload (ou o atual). Obrigatório quando mode = PHOTO. */
+
             @Size(max = 255) String imagePath,
             @NotBlank @Pattern(regexp = "^#[0-9A-Fa-f]{6}$", message = "Cor inválida.") String color,
             @Min(0) @Max(100) int posX,
@@ -103,7 +97,6 @@ public final class StoreDtos {
         }
     }
 
-    /** Resultado do upload: a fotografia só passa a valer quando a aparência é salva. */
     public record UploadedPhoto(String path, String url) {
     }
 

@@ -14,8 +14,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withComponentInputBinding(), withInMemoryScrolling({ scrollPositionRestoration: 'top' })),
-    // O HttpClient envia automaticamente o cookie XSRF-TOKEN no cabeçalho X-XSRF-TOKEN
-    // em requisições que alteram dados (proteção CSRF exigida pelo backend).
+
     provideHttpClient(
       withFetch(),
       withXsrfConfiguration({ cookieName: 'XSRF-TOKEN', headerName: 'X-XSRF-TOKEN' }),

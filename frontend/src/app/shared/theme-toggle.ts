@@ -3,7 +3,6 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { ThemeService } from '../core/ui.services';
 import { Icon } from './icon';
 
-/** Alterna entre automático (dispositivo), claro e escuro. */
 @Component({
   selector: 'app-theme-toggle',
   imports: [Icon],
@@ -19,7 +18,6 @@ export class ThemeToggle {
   readonly label = computed(() => 'Tema: ' + ({ auto: 'automático', light: 'claro', dark: 'escuro' })[this.theme.mode()] + ' (clique para alternar)');
 }
 
-/** Marca do produto. */
 @Component({
   selector: 'app-brand',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -124,7 +124,7 @@ export class StoreProduct implements OnInit {
     this.api.product(this.ctx.slug(), this.productSlug()).subscribe({
       next: p => {
         this.p.set(p);
-        // pré-seleciona a primeira combinação disponível
+
         const first = p.variants.find(v => v.available) ?? p.variants[0];
         if (first && p.hasVariants) { this.opt1.set(first.option1Value ?? null); this.opt2.set(first.option2Value ?? null); }
       },

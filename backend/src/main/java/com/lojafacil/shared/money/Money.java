@@ -5,18 +5,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Regras monetárias da aplicação.
- *
- * <ul>
- *   <li>Sempre BigDecimal com 2 casas decimais (centavos).</li>
- *   <li>Arredondamento HALF_UP (0,005 vira 0,01), o mais comum no comércio brasileiro.</li>
- *   <li>Parcelas: o total é dividido em centavos inteiros e os centavos que sobram vão para
- *       as primeiras parcelas, para que a soma seja exatamente igual ao total.</li>
- * </ul>
- */
 public final class Money {
-
     public static final int SCALE = 2;
     public static final RoundingMode ROUNDING = RoundingMode.HALF_UP;
     public static final BigDecimal ZERO = BigDecimal.ZERO.setScale(SCALE);
@@ -44,10 +33,6 @@ public final class Money {
         return v != null && v.signum() > 0;
     }
 
-    /**
-     * Divide um total em parcelas sem perder ou criar centavos.
-     * Ex.: R$ 100,00 em 3x = [33,34; 33,33; 33,33].
-     */
     public static List<BigDecimal> splitInstallments(BigDecimal total, int count) {
         if (count < 1) {
             throw new IllegalArgumentException("Quantidade de parcelas deve ser >= 1");

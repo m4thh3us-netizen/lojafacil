@@ -12,19 +12,14 @@ export interface Appearance {
   color: string;
   posX: number;
   posY: number;
-  /** Escurecimento uniforme sobre a fotografia, 0–70 (%). */
+
   dim: number;
-  /** Opacidade dos painéis de vidro, 55–95 (%). */
+
   glass: number;
 }
 
 export const DEFAULT_APPEARANCE: Appearance = { mode: 'COLOR', imagePath: null, imageUrl: null, color: '#3B4656', posX: 50, posY: 50, dim: 25, glass: 74 };
 
-/**
- * Aparência do painel (fundo + intensidade do vidro), salva por loja no servidor.
- * Enquanto o lojista ajusta as opções, um "rascunho" é aplicado em tempo real (pré-visualização);
- * só vira definitivo ao salvar.
- */
 @Injectable({ providedIn: 'root' })
 export class AppearanceService {
   private http = inject(HttpClient);
@@ -34,19 +29,15 @@ export class AppearanceService {
   readonly previewing = computed(() => this.draft() !== null);
 
   private readonly theme = inject(ThemeService);
-  /** Percentis de luminância da foto atual (sem escurecimento), medidos uma vez por foto. */
+
   private readonly photoStats = signal<{ url: string; stats: PhotoStats } | null>(null);
 
-  /**
-   * Opacidade mínima para manter o contraste do texto no tema atual (0 = sem restrição).
-   * Fotografias claras no modo escuro (ou escuras no claro) elevam esse mínimo.
-   */
   readonly minGlass = computed(() => {
     const a = this.current();
     let stats: PhotoStats | null;
     if (a.mode === 'PHOTO' && a.imageUrl) {
       const measured = this.photoStats();
-      if (!measured || measured.url !== a.imageUrl) return 0.9; // até medir, prefira segurança
+      if (!measured || measured.url !== a.imageUrl) return 0.9;
       const k = 1 - a.dim / 100;
       stats = { p10: measured.stats.p10 * k, p90: measured.stats.p90 * k };
     } else {
@@ -56,16 +47,14 @@ export class AppearanceService {
     return Math.min(0.97, Math.ceil(requiredAlpha(stats, this.theme.isDark()) * 100) / 100);
   });
 
-  /** Opacidade efetivamente aplicada: a escolha da loja, elevada se necessário para a leitura. */
   readonly effectiveGlass = computed(() => Math.max(this.current().glass / 100, this.minGlass()));
   readonly autoRaised = computed(() => this.effectiveGlass() > this.current().glass / 100 + 0.005);
 
   constructor() {
-    // A opacidade do vidro vale para toda a página (inclusive modais e notificações).
     effect(() => {
       document.documentElement.style.setProperty('--panel-alpha', this.effectiveGlass().toFixed(2));
     });
-    // Mede a fotografia sempre que ela muda (cálculo leve: imagem reduzida a 48 px de largura).
+
     effect(() => {
       const a = this.current();
       const url = a.mode === 'PHOTO' ? a.imageUrl : null;
@@ -98,7 +87,6 @@ export class AppearanceService {
     return this.http.post<{ path: string; url: string }>('/api/admin/store/appearance/photo', fd);
   }
 
-  /** Remove o valor do painel ao sair (ex.: logout), voltando ao padrão. */
   clear(): void {
     this.draft.set(null);
     this.saved.set(DEFAULT_APPEARANCE);

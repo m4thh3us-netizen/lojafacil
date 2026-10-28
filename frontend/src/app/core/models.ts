@@ -1,5 +1,3 @@
-// Tipos espelhando os DTOs da API (o backend nunca expõe entidades JPA diretamente).
-
 export type Role = 'OWNER' | 'MANAGER' | 'OPERATOR';
 export type OrderStatus = 'OPEN' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED';
 export type PaymentStatus = 'PENDING' | 'APPROVED' | 'DECLINED' | 'EXPIRED' | 'PARTIALLY_REFUNDED' | 'REFUNDED';

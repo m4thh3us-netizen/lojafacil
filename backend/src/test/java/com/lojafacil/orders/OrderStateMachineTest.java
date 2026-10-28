@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import com.lojafacil.shared.error.ApiException;
 
 class OrderStateMachineTest {
-
     @Test
     void pedidoSegueCaminhosValidos() {
         assertThat(OrderStateMachine.canOrder(OrderStatus.OPEN, OrderStatus.CONFIRMED)).isTrue();
@@ -23,7 +22,7 @@ class OrderStateMachineTest {
         assertThat(OrderStateMachine.canPayment(PaymentStatus.APPROVED, PaymentStatus.PENDING)).isFalse();
         assertThat(OrderStateMachine.canPayment(PaymentStatus.APPROVED, PaymentStatus.DECLINED)).isFalse();
         assertThat(OrderStateMachine.canPayment(PaymentStatus.REFUNDED, PaymentStatus.APPROVED)).isFalse();
-        assertThat(OrderStateMachine.canPayment(PaymentStatus.EXPIRED, PaymentStatus.APPROVED)).isTrue(); // pagamento tardio
+        assertThat(OrderStateMachine.canPayment(PaymentStatus.EXPIRED, PaymentStatus.APPROVED)).isTrue();
         assertThat(OrderStateMachine.canPayment(PaymentStatus.APPROVED, PaymentStatus.PARTIALLY_REFUNDED)).isTrue();
     }
 

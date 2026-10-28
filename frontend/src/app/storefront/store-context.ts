@@ -7,15 +7,10 @@ export interface CartItem extends CartLine {
   name: string;
   variantName?: string;
   imageUrl?: string;
-  /** Preço exibido no momento em que foi adicionado — apenas informativo; o servidor recalcula tudo. */
+
   priceHint: number;
 }
 
-/**
- * Estado da vitrine atual: dados públicos da loja e carrinho.
- * O carrinho fica no navegador (localStorage), separado por loja. Ele guarda só variante e quantidade
- * para o servidor; preços e disponibilidade são sempre recalculados pela API.
- */
 @Injectable()
 export class StoreContext {
   readonly store = signal<PublicStore | null>(null);
@@ -57,13 +52,12 @@ export class StoreContext {
     return this.cart().map(i => ({ variantId: i.variantId, quantity: i.quantity }));
   }
 
-  /** Guarda o token do último pedido para o cliente reencontrar o acompanhamento neste navegador. */
   rememberOrder(number: number, token: string) {
     try {
       const key = `lf-orders-${this.slug()}`;
       const list = JSON.parse(localStorage.getItem(key) ?? '[]') as { number: number; token: string }[];
       localStorage.setItem(key, JSON.stringify([{ number, token }, ...list].slice(0, 5)));
-    } catch { /* armazenamento indisponível */ }
+    } catch {}
   }
 
   recentOrders(): { number: number; token: string }[] {
@@ -81,6 +75,6 @@ export class StoreContext {
   }
 
   private save() {
-    try { localStorage.setItem(`lf-cart-${this.slug()}`, JSON.stringify(this.cart())); } catch { /* sem armazenamento: o carrinho dura a sessão */ }
+    try { localStorage.setItem(`lf-cart-${this.slug()}`, JSON.stringify(this.cart())); } catch {}
   }
 }

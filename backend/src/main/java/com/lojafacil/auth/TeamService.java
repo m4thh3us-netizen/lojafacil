@@ -17,11 +17,8 @@ import com.lojafacil.shared.security.CurrentUser;
 import com.lojafacil.shared.util.Tokens;
 import com.lojafacil.store.StoreRepository;
 
-
-/** Regras de gestão da equipe da loja. */
 @Service
 public class TeamService {
-
     public record TeamView(List<UserView> members, List<InvitationView> invitations) {
     }
 
@@ -56,10 +53,6 @@ public class TeamService {
                         .toList());
     }
 
-    /**
-     * Cria o convite e envia por e-mail. O link também é devolvido uma única vez na resposta,
-     * para que o proprietário possa compartilhá-lo manualmente (útil sem servidor de e-mail).
-     */
     @Transactional
     public InvitationView invite(InviteRequest req) {
         if (req.role() == Role.OWNER) {

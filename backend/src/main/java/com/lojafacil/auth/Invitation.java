@@ -17,13 +17,11 @@ import lombok.Setter;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-/** Convite enviado pelo proprietário para um colaborador entrar na loja. */
 @Entity
 @Table(name = "user_invitations")
 @Getter
 @Setter
 public class Invitation {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

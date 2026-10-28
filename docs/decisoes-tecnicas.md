@@ -1,6 +1,4 @@
-# Decisões técnicas — explicadas de forma simples
-
-Perguntas comuns em entrevistas e como este projeto responde a elas.
+# Decisões técnicas
 
 ### Por que um monólito modular e não microserviços?
 Uma pequena loja tem pouco volume e uma equipe pequena. Microserviços trariam rede entre serviços,

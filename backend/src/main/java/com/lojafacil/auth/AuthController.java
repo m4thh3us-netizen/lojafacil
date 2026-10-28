@@ -39,16 +39,10 @@ import com.lojafacil.shared.security.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-/**
- * Autenticação baseada em sessão: após o login, o servidor guarda o usuário na sessão e o navegador
- * recebe apenas um cookie HttpOnly (JSESSIONID), inacessível a JavaScript.
- * O logout é tratado pelo Spring Security em POST /api/auth/logout.
- */
 @RestController
 @RequestMapping("/api/auth")
 @Tag(name = "Autenticação")
 public class AuthController {
-
     private final AuthService authService;
     private final AuthenticationManager authenticationManager;
     private final SecurityContextRepository securityContextRepository;
@@ -98,7 +92,7 @@ public class AuthController {
                     UsernamePasswordAuthenticationToken.unauthenticated(req.email().trim(), req.password()));
         } catch (AuthenticationException e) {
             attempts.recordFailure(emailKey, ipKey);
-            // Mesma mensagem para usuário inexistente, senha errada ou conta desativada.
+
             throw new ApiException(HttpStatus.UNAUTHORIZED, "BAD_CREDENTIALS", "E-mail ou senha inválidos.");
         }
         attempts.reset(emailKey);
@@ -120,7 +114,7 @@ public class AuthController {
     public void forgot(@Valid @RequestBody ForgotPasswordRequest req, HttpServletRequest request) {
         String key = "forgot-ip:" + request.getRemoteAddr();
         attempts.checkAllowed(key);
-        attempts.recordFailure(key); // conta cada pedido para limitar abuso de envio de e-mails
+        attempts.recordFailure(key);
         authService.requestPasswordReset(req.email());
     }
 
@@ -146,7 +140,6 @@ public class AuthController {
         return authService.me(user.getId());
     }
 
-    /** Cria a sessão autenticada. Trocar o id da sessão evita ataques de fixação de sessão. */
     private void startSession(AuthUser user, HttpServletRequest request, HttpServletResponse response) {
         request.getSession(true);
         request.changeSessionId();

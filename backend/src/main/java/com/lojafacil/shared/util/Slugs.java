@@ -5,12 +5,9 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-/** Geração e validação de identificadores amigáveis para URL ("Camiseta Azul" -> "camiseta-azul"). */
 public final class Slugs {
-
     public static final Pattern VALID = Pattern.compile("^[a-z0-9](?:[a-z0-9-]{1,58}[a-z0-9])$");
 
-    /** Identificadores de loja que colidiriam com rotas do sistema. */
     public static final Set<String> RESERVED = Set.of(
             "admin", "api", "login", "cadastro", "painel", "loja", "files", "swagger", "docs",
             "recuperar-senha", "redefinir-senha", "convite", "assets", "static");

@@ -31,10 +31,8 @@ import com.lojafacil.auth.Role;
 import com.lojafacil.support.IntegrationTest;
 import com.lojafacil.support.TestData;
 
-/** Aparência do painel: permissões, limites de legibilidade, isolamento e otimização da fotografia. */
 @Import(TestData.class)
 class AppearanceIT extends IntegrationTest {
-
     @Autowired
     MockMvc mvc;
 
@@ -51,7 +49,6 @@ class AppearanceIT extends IntegrationTest {
         assertThat(Math.max(stored.getWidth(), stored.getHeight())).isEqualTo(2400);
         assertThat(Files.size(Path.of("target/test-uploads", path))).isLessThan(2_000_000L);
 
-        // ainda não aplicada
         mvc.perform(get("/api/admin/store/appearance").with(owner)).andExpect(jsonPath("$.mode").value("COLOR"));
 
         mvc.perform(put("/api/admin/store/appearance").with(owner).with(csrf()).contentType(MediaType.APPLICATION_JSON)
@@ -101,7 +98,6 @@ class AppearanceIT extends IntegrationTest {
                 """.formatted(mode, path == null ? "null" : "\"" + path + "\"", dim, glass);
     }
 
-    /** "Fotografia" sintética com ruído (não comprime trivialmente, como uma foto real). */
     private static MockMultipartFile photo(int w, int h) throws Exception {
         BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = img.createGraphics();

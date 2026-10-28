@@ -17,14 +17,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
-/** Token de recuperação de senha: uso único, validade curta, armazenado apenas como hash. */
 @Entity
 @Table(name = "password_reset_tokens")
 @Getter
 @Setter
 @NoArgsConstructor
 public class PasswordResetToken {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -55,7 +53,6 @@ public class PasswordResetToken {
     public interface Repo extends JpaRepository<PasswordResetToken, Long> {
         Optional<PasswordResetToken> findByTokenHash(String tokenHash);
 
-        /** Invalida tokens anteriores do mesmo usuário ao gerar um novo. */
         @Modifying
         @Query("update PasswordResetToken t set t.usedAt = :now where t.userId = :userId and t.usedAt is null")
         void invalidateAll(Long userId, Instant now);

@@ -36,22 +36,8 @@ import com.lojafacil.shared.security.CurrentUser;
 import com.lojafacil.store.Store;
 import com.lojafacil.store.StoreRepository;
 
-/**
- * Orquestra cobranças, confirmações, reembolsos e cancelamentos.
- *
- * <h3>Regra de ouro: rede fora da transação</h3>
- * Cada fluxo é dividido em etapas: (1) transação curta para validar e registrar a intenção,
- * (2) chamada ao provedor SEM transação aberta, (3) transação curta para gravar o resultado.
- * Usamos {@link TransactionTemplate} para deixar explícito onde cada transação começa e termina.
- *
- * <h3>Idempotência</h3>
- * O estado final é sempre obtido consultando o provedor (nunca pelo redirecionamento do navegador).
- * Aplicar a mesma situação duas vezes não muda nada: a baixa de estoque é controlada por
- * {@code order.stockCommitted} e os lançamentos financeiros por chave única de origem.
- */
 @Service
 public class PaymentService {
-
     private static final Logger log = LoggerFactory.getLogger(PaymentService.class);
 
     private final Payment.Repo payments;
@@ -83,9 +69,6 @@ public class PaymentService {
         this.tx = new TransactionTemplate(transactionManager);
     }
 
-    // ------------------------------------------------------------------ criação da cobrança
-
-    /** Registra a cobrança pendente na mesma transação da criação do pedido. */
     @Transactional(propagation = Propagation.MANDATORY)
     public Payment createPending(Order order, ProviderType provider) {
         Payment p = new Payment();
@@ -97,10 +80,6 @@ public class PaymentService {
         return payments.save(p);
     }
 
-    /**
-     * Cria (ou reaproveita) o checkout no provedor. Pode ser chamado de novo com segurança:
-     * a mesma chave de idempotência é enviada, então o provedor não duplica a cobrança.
-     */
     public CheckoutSession startCheckout(Long paymentId, String trackingUrl) {
         record Data(Payment payment, Order order, Store store) {
         }
@@ -129,9 +108,6 @@ public class PaymentService {
         return session;
     }
 
-    // ------------------------------------------------------------------ confirmação (webhook, retorno, conciliação)
-
-    /** Consulta o provedor pela referência externa e aplica a situação encontrada. */
     public String sync(Long paymentId) {
         Payment p = payments.findById(paymentId).orElseThrow(() -> Errors.notFound("Pagamento"));
         if (p.getProvider() == ProviderType.MANUAL) {
@@ -142,7 +118,6 @@ public class PaymentService {
         return found.map(pp -> apply(paymentId, pp)).orElse("NOT_FOUND");
     }
 
-    /** Conferência manual pelo painel ("Consultar pagamento"). */
     public void syncOrder(Long storeId, Long orderId) {
         Payment p = payments.findFirstByOrderIdOrderByCreatedAtDesc(orderId)
                 .filter(x -> x.getStoreId().equals(storeId))
@@ -154,7 +129,6 @@ public class PaymentService {
         }
     }
 
-    /** Notificação do provedor: busca o pagamento pelo id informado e o associa à nossa cobrança. */
     public String processNotification(Long storeId, ProviderType type, String providerPaymentId) {
         Resolved r = integrations.resolve(storeId, type);
         Optional<ProviderPayment> found = r.provider().findPayment(r.context(), providerPaymentId);
@@ -175,10 +149,6 @@ public class PaymentService {
         return ours.map(p -> apply(p.getId(), pp)).orElse("UNKNOWN_REFERENCE");
     }
 
-    /**
-     * Aplica a situação informada pelo provedor ao pagamento e ao pedido. Trava pedido e pagamento,
-     * confere loja, referência, valor e moeda, e trata notificações repetidas ou fora de ordem.
-     */
     public String apply(Long paymentId, ProviderPayment pp) {
         return tx.execute(s -> {
             Payment snapshot = payments.findById(paymentId).orElseThrow(() -> Errors.notFound("Pagamento"));
@@ -205,7 +175,6 @@ public class PaymentService {
                     || target == PaymentStatus.REFUNDED;
 
             if (!targetPaid) {
-                // Notificação antiga chegando depois da aprovação: ignorada (nunca "desaprova")
                 if (p.getStatus().isPaid() || p.getStatus() == PaymentStatus.REFUNDED) {
                     return "IGNORED_STALE";
                 }
@@ -225,7 +194,6 @@ public class PaymentService {
                 return target.name();
             }
 
-            // 1) primeira aprovação: confirma pedido, baixa estoque e lança a receita
             if (!p.getStatus().isPaid() && p.getStatus() != PaymentStatus.REFUNDED) {
                 p.setStatus(PaymentStatus.APPROVED);
                 p.setFeeAmount(Money.normalize(pp.feeAmount()));
@@ -241,7 +209,6 @@ public class PaymentService {
                         SourceType.PAYMENT_FEE, "payment:" + p.getId() + ":fee", order.getId(), p.getId(), null);
             }
 
-            // 2) reembolsos informados pelo provedor (feitos por nós ou direto no painel do provedor)
             if (pp.refundedAmount().compareTo(p.getRefundedAmount()) > 0) {
                 BigDecimal diff = pp.refundedAmount().subtract(p.getRefundedAmount());
                 for (Refund r : refunds.findByPaymentIdAndStatusOrderById(p.getId(), Refund.Status.REQUESTED)) {
@@ -263,15 +230,12 @@ public class PaymentService {
         });
     }
 
-    // ------------------------------------------------------------------ reembolso
-
-    /** Reembolso total ou parcial (Proprietário/Gerente). */
     public void refund(Long storeId, Long orderId, BigDecimal rawAmount, String reason) {
         BigDecimal amount = Money.normalize(rawAmount);
         if (amount.signum() <= 0) {
             throw Errors.badRequest("INVALID_AMOUNT", "Informe um valor positivo.");
         }
-        // Etapa 1: registra a intenção (REQUESTED) com chave de idempotência própria
+
         record Plan(Long refundId, Long paymentId, ProviderType provider, String providerPaymentId, UUID key) {
         }
         Plan plan = tx.execute(s -> {
@@ -294,7 +258,6 @@ public class PaymentService {
             return new Plan(r.getId(), p.getId(), p.getProvider(), p.getProviderPaymentId(), r.getIdempotencyKey());
         });
 
-        // Etapa 2: chamada ao provedor, sem transação aberta
         if (plan.provider() != ProviderType.MANUAL) {
             try {
                 Resolved r = integrations.resolve(storeId, plan.provider());
@@ -305,7 +268,6 @@ public class PaymentService {
             }
         }
 
-        // Etapa 3: grava o resultado (se um webhook já tiver concluído este reembolso, nada muda)
         tx.executeWithoutResult(s -> {
             Order order = orders.lockById(orderId).orElseThrow();
             Payment p = payments.lockById(plan.paymentId()).orElseThrow();
@@ -330,12 +292,6 @@ public class PaymentService {
                 SourceType.REFUND, "refund:" + r.getId(), order.getId(), p.getId(), order.getCustomerId());
     }
 
-    // ------------------------------------------------------------------ cancelamento
-
-    /**
-     * Cancela o pedido: sem pagamento, libera a reserva; pago e ainda não enviado, reembolsa o valor
-     * restante e devolve os itens ao estoque. Pedidos enviados/entregues usam o fluxo de devolução.
-     */
     public void cancelOrder(Long storeId, Long orderId, String reason) {
         record State(PaymentStatus paymentStatus, BigDecimal refundable) {
         }
@@ -367,9 +323,6 @@ public class PaymentService {
         tx.executeWithoutResult(s -> orderService.cancelAfterFullRefund(orderService.lockForStore(storeId, orderId), reason));
     }
 
-    // ------------------------------------------------------------------ recebimento manual
-
-    /** Registra pagamento feito fora do sistema (dinheiro, maquininha, Pix direto). */
     public void registerManualPayment(Long storeId, Long orderId, String method) {
         Long paymentId = tx.execute(s -> {
             Order order = orderService.lockForStore(storeId, orderId);
@@ -388,12 +341,6 @@ public class PaymentService {
                 "manual", p.getAmount(), "BRL", BigDecimal.ZERO, BigDecimal.ZERO, method, false));
     }
 
-    // ------------------------------------------------------------------ expiração
-
-    /**
-     * Expira um pedido cuja reserva venceu. Antes, consulta o provedor: se o pagamento foi aprovado
-     * e o webhook se perdeu, o pedido é confirmado em vez de cancelado.
-     */
     public void expireOrder(Long orderId) {
         payments.findFirstByOrderIdOrderByCreatedAtDesc(orderId)
                 .filter(p -> p.getProvider() != ProviderType.MANUAL && p.getStatus() == PaymentStatus.PENDING)

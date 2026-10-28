@@ -26,19 +26,8 @@ import com.lojafacil.shared.util.Tokens;
 import com.lojafacil.store.Store;
 import com.lojafacil.store.StoreService;
 
-/**
- * Fluxo de compra (vitrine e pedido manual).
- *
- * <ol>
- *   <li>Transação: recalcula preços, cria o pedido, reserva o estoque e registra a cobrança pendente.</li>
- *   <li>Sem transação: cria o checkout no provedor (chamada de rede).</li>
- *   <li>O cliente é redirecionado ao checkout hospedado. A confirmação chega por webhook
- *       ou pela consulta feita quando ele volta à página do pedido — nunca pelo redirecionamento em si.</li>
- * </ol>
- */
 @Service
 public class CheckoutService {
-
     private final StoreService stores;
     private final OrderService orderService;
     private final OrderRepository orders;
@@ -94,7 +83,6 @@ public class CheckoutService {
         return placeAndCharge(store, cmd, provider, false);
     }
 
-    /** Gera novamente o link de pagamento (ex.: falha de comunicação na primeira tentativa). */
     public String retryCheckout(String slug, String trackingToken) {
         Store store = stores.getBySlug(slug);
         Order order = orders.findByTrackingTokenHash(Tokens.sha256(trackingToken))
@@ -111,7 +99,6 @@ public class CheckoutService {
         }
     }
 
-    /** Confere a situação no provedor quando o cliente volta do checkout (não confia no redirecionamento). */
     public void syncByToken(String slug, String trackingToken) {
         Store store = stores.getBySlug(slug);
         Order order = orders.findByTrackingTokenHash(Tokens.sha256(trackingToken))
@@ -123,7 +110,6 @@ public class CheckoutService {
                     try {
                         payments.sync(p.getId());
                     } catch (ProviderException ignored) {
-                        // o webhook ou a conciliação periódica concluirão a confirmação
                     }
                 });
     }

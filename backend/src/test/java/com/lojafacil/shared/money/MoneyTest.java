@@ -11,7 +11,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 class MoneyTest {
-
     @Test
     void arredondaMeioCentavoParaCima() {
         assertThat(Money.normalize(new BigDecimal("10.005"))).isEqualByComparingTo("10.01");
@@ -20,7 +19,6 @@ class MoneyTest {
 
     @Test
     void multiplicaSemErroDePontoFlutuante() {
-        // 0.1 * 3 em double daria 0.30000000000000004
         assertThat(Money.times(new BigDecimal("0.10"), 3)).isEqualByComparingTo("0.30");
     }
 

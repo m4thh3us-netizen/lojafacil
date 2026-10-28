@@ -17,11 +17,9 @@ import jakarta.validation.constraints.Size;
 import com.lojafacil.store.StoreDtos;
 
 public final class CatalogDtos {
-
     private CatalogDtos() {
     }
 
-    // ------------------------------------------------------------------ categorias
     public record CategoryRequest(@NotBlank(message = "Informe o nome.") @Size(max = 80) String name, boolean active) {
     }
 
@@ -31,7 +29,6 @@ public final class CatalogDtos {
         }
     }
 
-    // ------------------------------------------------------------------ produtos (painel)
     public record VariantRequest(
             Long id,
             @Size(max = 60) @Pattern(regexp = "^$|^[A-Za-z0-9._-]+$", message = "SKU deve ter letras, números, ponto, hífen ou sublinhado.") String sku,
@@ -63,7 +60,7 @@ public final class CatalogDtos {
             boolean hasVariants,
             @Size(max = 40) String option1Name,
             @Size(max = 40) String option2Name,
-            /** Para produto simples, use 0 ou 1 item (estoque inicial); para produto com variações, uma por SKU. */
+
             @Valid @Size(max = 100) List<VariantRequest> variants) {
     }
 
@@ -115,7 +112,6 @@ public final class CatalogDtos {
         }
     }
 
-    // ------------------------------------------------------------------ vitrine pública (sem custo, sem dados internos)
     public record PublicProductCard(Long id, String slug, String name, String imageUrl, BigDecimal price,
                                     BigDecimal finalPrice, boolean onSale, boolean hasVariants, boolean available,
                                     String categorySlug) {

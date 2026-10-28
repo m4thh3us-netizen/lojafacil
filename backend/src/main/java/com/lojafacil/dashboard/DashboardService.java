@@ -26,17 +26,11 @@ import com.lojafacil.orders.OrderRepository;
 import com.lojafacil.shared.error.Errors;
 import com.lojafacil.shared.money.Money;
 
-/**
- * Indicadores do painel, sempre calculados a partir do banco para o período escolhido.
- * Operadores recebem apenas os indicadores operacionais (sem valores financeiros).
- */
 @Service
 @Transactional(readOnly = true)
 public class DashboardService {
-
     static final ZoneId ZONE = ZoneId.of("America/Sao_Paulo");
 
-    /** Definição de cada indicador, exibida na interface para evitar interpretações erradas. */
     public static final Map<String, String> DEFINITIONS = new LinkedHashMap<>();
 
     static {
@@ -107,7 +101,6 @@ public class DashboardService {
                 financial ? Money.normalize((BigDecimal) r[3]) : null)).toList();
     }
 
-    /** Série diária de vendas (dias sem venda aparecem com zero, para o gráfico não "pular" datas). */
     @SuppressWarnings("unchecked")
     private List<SalesPoint> salesSeries(Long storeId, LocalDate from, LocalDate to, boolean financial) {
         List<Object[]> rows = em.createNativeQuery("""

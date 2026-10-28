@@ -1,10 +1,3 @@
-# LojaFácil - ambiente local completo
-#   docker compose up --build
-# Serviços:
-#   frontend  http://localhost:4200  (Nginx servindo o Angular e repassando /api para o backend)
-#   backend   http://localhost:8080  (Swagger em /swagger-ui.html)
-#   mailpit   http://localhost:8025  (caixa de entrada de testes para e-mails de senha e convites)
-#   postgres  localhost:5432
 name: lojafacil
 
 services:

@@ -48,7 +48,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @PreAuthorize(Access.OPERATIONS)
 @Tag(name = "Pedidos")
 public class OrderController {
-
     public record RefundRequest(@NotNull @DecimalMin("0.01") BigDecimal amount,
                                 @NotBlank(message = "Informe o motivo.") @Size(max = 300) String reason) {
     }
@@ -94,7 +93,6 @@ public class OrderController {
         return queries.detail(currentUser.storeId(), id);
     }
 
-    /** Prévia de totais para o formulário de pedido manual (mesmo cálculo da vitrine). */
     @PostMapping("/quote")
     public Quote quote(@Valid @RequestBody QuoteRequest req) {
         return checkout.quote(stores.get(currentUser.storeId()).getSlug(), req);

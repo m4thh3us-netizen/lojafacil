@@ -6,10 +6,8 @@ import org.springframework.context.annotation.Configuration;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 
-/** Documentação da API disponível em /swagger-ui.html e /v3/api-docs. */
 @Configuration
 public class OpenApiConfig {
-
     @Bean
     OpenAPI lojaFacilOpenApi() {
         return new OpenAPI().info(new Info()

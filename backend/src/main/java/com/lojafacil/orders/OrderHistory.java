@@ -14,13 +14,11 @@ import lombok.NoArgsConstructor;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-/** Linha do tempo do pedido: cada mudança de estado ou observação gera um registro. */
 @Entity
 @Table(name = "order_history")
 @Getter
 @NoArgsConstructor
 public class OrderHistory {
-
     public enum Field { ORDER, PAYMENT, FULFILLMENT, NOTE, RETURN }
 
     @Id

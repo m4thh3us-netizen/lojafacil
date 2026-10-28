@@ -31,13 +31,11 @@ import com.lojafacil.shared.web.PageResponse;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-/** Catálogo no painel. A loja sempre vem da sessão ({@link CurrentUser}), nunca da requisição. */
 @RestController
 @RequestMapping("/api/admin")
 @PreAuthorize(Access.OPERATIONS)
 @Tag(name = "Catálogo")
 public class CatalogController {
-
     private final ProductService products;
     private final CategoryService categories;
     private final CurrentUser currentUser;

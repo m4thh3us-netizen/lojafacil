@@ -21,20 +21,14 @@ import com.lojafacil.shared.money.Money;
 import com.lojafacil.store.Store;
 import com.lojafacil.store.StoreDtos;
 
-/**
- * Cálculo de preços, descontos, entrega e total — sempre no servidor.
- * O navegador envia apenas "variante + quantidade"; qualquer valor monetário vindo dele é ignorado.
- */
 @Service
 public class PricingService {
-
     private final VariantRepository variants;
 
     public PricingService(VariantRepository variants) {
         this.variants = variants;
     }
 
-    /** Soma linhas repetidas da mesma variante e mantém a ordem do carrinho. */
     public static Map<Long, Integer> aggregate(List<CartLine> lines) {
         Map<Long, Integer> map = new LinkedHashMap<>();
         for (CartLine l : lines) {
@@ -61,7 +55,6 @@ public class PricingService {
         return Money.normalize(store.getLocalDeliveryFee());
     }
 
-    /** Prévia do carrinho para a vitrine: mostra problemas por item em vez de lançar erro. */
     @Transactional(readOnly = true)
     public Quote quote(Store store, DeliveryMethod method, List<CartLine> lines) {
         Map<Long, Integer> quantities = aggregate(lines);
@@ -106,7 +99,6 @@ public class PricingService {
         return new Quote(out, subtotal, discount, fee, total, valid && !out.isEmpty());
     }
 
-    /** Preenche os itens do pedido a partir das variantes (já travadas e validadas pelo estoque). */
     static void fillItems(Order order, Map<Long, Integer> quantities, Map<Long, ProductVariant> lockedVariants) {
         BigDecimal subtotal = Money.ZERO;
         BigDecimal discount = Money.ZERO;

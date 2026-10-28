@@ -13,13 +13,11 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
-/** Uma loja (tenant). Todos os dados de negócio pertencem a exatamente uma loja. */
 @Entity
 @Table(name = "stores")
 @Getter
 @Setter
 public class Store {
-
     public static final String DEFAULT_PRIMARY = "#1F5EFF";
     public static final String DEFAULT_SECONDARY = "#0F172A";
 
@@ -51,11 +49,10 @@ public class Store {
     private boolean pickupEnabled = true;
     private boolean localDeliveryEnabled;
     private BigDecimal localDeliveryFee = BigDecimal.ZERO;
-    /** Minutos que o estoque fica reservado aguardando pagamento. */
+
     private int reservationMinutes = 30;
     private boolean demo;
 
-    // ------------------------------------------------ aparência do painel (independente da vitrine)
     public static final String DEFAULT_PANEL_COLOR = "#3B4656";
     public static final int DEFAULT_PANEL_DIM = 25;
     public static final int DEFAULT_PANEL_GLASS = 74;

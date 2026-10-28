@@ -14,21 +14,15 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
 public interface VariantRepository extends JpaRepository<ProductVariant, Long> {
-
     @EntityGraph(attributePaths = {"product"})
     Optional<ProductVariant> findByIdAndStoreId(Long id, Long storeId);
 
     boolean existsByStoreIdAndSku(Long storeId, String sku);
 
-    /**
-     * Trava (SELECT ... FOR UPDATE) as variantes antes de alterar o estoque.
-     * A ordenação por id evita deadlock quando dois pedidos travam as mesmas variantes.
-     */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select v from ProductVariant v join fetch v.product where v.storeId = :storeId and v.id in :ids order by v.id")
     List<ProductVariant> lockForUpdate(Long storeId, Collection<Long> ids);
 
-    /** Variantes vendáveis com disponível <= estoque mínimo do produto. */
     @EntityGraph(attributePaths = {"product"})
     @Query("""
             select v from ProductVariant v

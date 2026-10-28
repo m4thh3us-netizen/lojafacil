@@ -10,10 +10,6 @@ import { AddressFields, addressComplete, emptyAddress } from '../shared/address-
 import { Icon } from '../shared/icon';
 import { StoreContext } from './store-context';
 
-/**
- * Checkout como visitante. O navegador envia apenas dados do comprador e "variante + quantidade";
- * o servidor recalcula tudo, reserva o estoque e devolve o link do checkout hospedado.
- */
 @Component({
   selector: 'app-store-checkout',
   imports: [FormsModule, RouterLink, BrlPipe, Icon, AddressFields],
@@ -110,7 +106,7 @@ export class StoreCheckout implements OnInit {
       this.error.set('Preencha nome, e-mail e telefone válidos.'); return;
     }
     if (this.delivery === 'LOCAL_DELIVERY' && !addressComplete(this.address)) { this.error.set('Complete o endereço de entrega.'); return; }
-    if (this.busy()) return; // impede envio duplicado
+    if (this.busy()) return;
     this.busy.set(true);
     this.api.checkout(this.ctx.slug(), {
       customer: c, deliveryMethod: this.delivery, address: this.delivery === 'LOCAL_DELIVERY' ? this.address : null,
@@ -120,7 +116,7 @@ export class StoreCheckout implements OnInit {
         this.ctx.rememberOrder(r.orderNumber, r.trackingToken);
         this.ctx.clear();
         if (r.checkoutUrl) {
-          window.location.href = r.checkoutUrl; // checkout hospedado (Mercado Pago ou página do simulador)
+          window.location.href = r.checkoutUrl;
         } else {
           this.router.navigate(['/loja', this.ctx.slug(), 'pedido', r.trackingToken]);
         }

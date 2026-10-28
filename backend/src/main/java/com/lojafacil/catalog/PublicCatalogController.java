@@ -18,12 +18,10 @@ import com.lojafacil.store.StoreService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-/** Vitrine pública: só expõe produtos ativos, visíveis e não arquivados, sem custo ou dados internos. */
 @RestController
 @RequestMapping("/api/public/stores/{slug}")
 @Tag(name = "Vitrine pública")
 public class PublicCatalogController {
-
     private final StoreService stores;
     private final ProductService products;
     private final CategoryService categories;

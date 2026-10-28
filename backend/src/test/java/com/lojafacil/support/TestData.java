@@ -38,10 +38,8 @@ import com.lojafacil.payments.ProviderType;
 import com.lojafacil.payments.simulator.SimulatedPaymentProvider;
 import com.lojafacil.shared.security.AuthUser;
 
-/** Atalhos para montar cenários de teste usando os serviços reais. */
 @TestComponent
 public class TestData {
-
     private static final AtomicInteger SEQ = new AtomicInteger();
 
     public record StoreCtx(Long storeId, String slug, User owner) {
@@ -99,7 +97,6 @@ public class TestData {
         return new AuthUser(u.getId(), u.getStoreId(), u.getEmail(), u.getFullName(), u.getRole(), true, null);
     }
 
-    /** Produto simples com estoque inicial. */
     public ProductDetail product(Long storeId, String price, String promo, String cost, int stock) {
         String sku = "SKU-" + SEQ.incrementAndGet();
         return products.create(storeId, new ProductRequest("Produto " + sku, null, null, sku, null,
@@ -122,7 +119,6 @@ public class TestData {
                 DeliveryMethod.PICKUP, null, List.of(new CartLine(variantId, qty)), null));
     }
 
-    /** Lê o pedido (com itens) numa transação curta, já que os testes rodam fora de transação. */
     public Order order(Long storeId, int number) {
         return tx.execute(s -> {
             Order o = orders.findAll().stream().filter(x -> x.getStoreId().equals(storeId) && x.getNumber() == number)
@@ -136,7 +132,6 @@ public class TestData {
         return paymentRepo.findFirstByOrderIdOrderByCreatedAtDesc(orderId).orElseThrow();
     }
 
-    /** Cliente decide na página simulada e o provedor notifica (mesmo caminho do webhook). */
     public String pay(Long storeId, int orderNumber, boolean approve) {
         Payment p = paymentOf(order(storeId, orderNumber).getId());
         simulator.decide(UUID.fromString(p.getProviderCheckoutId()), approve);

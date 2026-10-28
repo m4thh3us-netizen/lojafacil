@@ -3,12 +3,11 @@ import { Injectable, computed, signal } from '@angular/core';
 
 export type ThemeMode = 'light' | 'dark' | 'auto';
 
-/** Preferência pessoal de tema do painel (independente das cores da vitrine). Persistida no navegador. */
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
   readonly mode = signal<ThemeMode>(this.read());
   private readonly systemDark = signal(false);
-  /** Tema efetivamente em uso (resolve o modo automático pela preferência do dispositivo). */
+
   readonly isDark = computed(() => this.mode() === 'dark' || (this.mode() === 'auto' && this.systemDark()));
 
   constructor() {
@@ -21,7 +20,7 @@ export class ThemeService {
 
   set(mode: ThemeMode): void {
     this.mode.set(mode);
-    try { localStorage.setItem('lf-theme', mode); } catch { /* armazenamento indisponível */ }
+    try { localStorage.setItem('lf-theme', mode); } catch {}
     if (mode === 'auto') {
       document.documentElement.removeAttribute('data-theme');
     } else {
@@ -46,7 +45,6 @@ export class ThemeService {
 
 export interface Toast { id: number; kind: 'success' | 'error' | 'info'; text: string; }
 
-/** Notificações curtas de sucesso/erro após ações. */
 @Injectable({ providedIn: 'root' })
 export class ToastService {
   readonly toasts = signal<Toast[]>([]);
@@ -65,7 +63,6 @@ export class ToastService {
   }
 }
 
-/** Extrai a mensagem amigável enviada pela API (Problem Details) ou uma mensagem padrão. */
 export function errorMessage(err: unknown): string {
   if (err instanceof HttpErrorResponse) {
     if (err.status === 0) return 'Sem conexão com o servidor. Verifique sua internet e tente novamente.';
@@ -78,7 +75,6 @@ export function errorMessage(err: unknown): string {
   return 'Não foi possível concluir a operação. Tente novamente.';
 }
 
-/** Erros por campo retornados na validação do backend. */
 export function fieldErrors(err: unknown): Record<string, string> {
   if (err instanceof HttpErrorResponse && err.error && typeof err.error === 'object' && 'errors' in err.error) {
     return (err.error as { errors: Record<string, string> }).errors ?? {};

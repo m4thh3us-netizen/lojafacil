@@ -16,7 +16,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CustomerAddress {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -34,7 +33,6 @@ public class CustomerAddress {
     private String state;
     private String zip;
 
-    /** Endereço em uma linha, usado como "fotografia" no pedido. */
     public String formatted() {
         return street + ", " + number + (complement != null ? " - " + complement : "")
                 + " - " + district + ", " + city + "/" + state + " - CEP " + zip;

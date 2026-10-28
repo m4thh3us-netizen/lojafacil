@@ -24,12 +24,10 @@ import com.lojafacil.store.StoreService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-/** Carrinho, checkout e acompanhamento de pedidos da vitrine (compra como visitante). */
 @RestController
 @RequestMapping("/api/public/stores/{slug}")
 @Tag(name = "Vitrine pública")
 public class PublicOrderController {
-
     private final CheckoutService checkout;
     private final OrderQueries queries;
     private final StoreService stores;

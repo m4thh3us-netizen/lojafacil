@@ -284,7 +284,6 @@ export class SettingsPage {
   readonly auditTotal = signal(0);
   auditPage = 0;
 
-  // métodos (e não computed), pois o formulário é um objeto comum ligado por ngModel
   onPrimary() { return bestText(this.form.primaryColor ?? '#1F5EFF'); }
   onSecondary() { return bestText(this.form.secondaryColor ?? '#0F172A'); }
 

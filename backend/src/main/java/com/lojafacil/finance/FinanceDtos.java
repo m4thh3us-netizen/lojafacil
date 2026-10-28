@@ -15,7 +15,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public final class FinanceDtos {
-
     private FinanceDtos() {
     }
 
@@ -28,10 +27,6 @@ public final class FinanceDtos {
         }
     }
 
-    /**
-     * Novo lançamento manual. Com installments > 1, o total é dividido em parcelas mensais;
-     * os centavos que sobram vão para as primeiras parcelas (a soma é sempre igual ao total).
-     */
     public record EntryRequest(
             @NotNull EntryType type,
             @NotNull(message = "Escolha a categoria.") Long categoryId,
@@ -40,7 +35,7 @@ public final class FinanceDtos {
             @Digits(integer = 12, fraction = 2) BigDecimal totalAmount,
             @Min(1) @Max(60) int installments,
             @NotNull(message = "Informe o vencimento.") LocalDate firstDueDate,
-            /** Já pago/recebido (apenas para lançamento à vista). */
+
             boolean paid,
             LocalDate paidDate,
             @Size(max = 160) String counterparty,
@@ -82,10 +77,6 @@ public final class FinanceDtos {
                            List<CashFlowPoint> points) {
     }
 
-    /**
-     * Indicadores gerenciais do período. Cada campo tem uma definição única (ver README, "Glossário").
-     * Nenhum deles é "saldo disponível" ou "lucro contábil".
-     */
     public record Summary(LocalDate from, LocalDate to,
                           BigDecimal salesRevenue, long salesCount,
                           BigDecimal receipts, BigDecimal receivablesOpen, BigDecimal receivablesOverdue,

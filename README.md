@@ -157,7 +157,7 @@ Documentos complementares:
 - [Modelo de dados (diagrama)](docs/modelo-de-dados.md)
 - [Fluxo de compra e pagamento](docs/fluxo-de-compra.md)
 - [Configurar pagamentos de teste (Mercado Pago)](docs/pagamentos-teste.md)
-- [Decisões técnicas explicadas (para entrevistas)](docs/decisoes-tecnicas.md)
+- [Decisões técnicas](docs/decisoes-tecnicas.md)
 
 ---
 

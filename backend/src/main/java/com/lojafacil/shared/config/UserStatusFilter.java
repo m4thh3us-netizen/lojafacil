@@ -20,14 +20,7 @@ import com.lojafacil.auth.User;
 import com.lojafacil.auth.UserRepository;
 import com.lojafacil.shared.security.AuthUser;
 
-/**
- * A sessão guarda uma "foto" do usuário no momento do login. Este filtro confere, a cada requisição
- * administrativa, se o usuário continua ativo e se o perfil mudou. Assim, um colaborador desativado
- * perde o acesso imediatamente e uma mudança de perfil passa a valer sem novo login.
- * Custo: uma consulta por chave primária por requisição autenticada.
- */
 class UserStatusFilter extends OncePerRequestFilter {
-
     private final UserRepository users;
     private final SecurityContextRepository contextRepository;
 

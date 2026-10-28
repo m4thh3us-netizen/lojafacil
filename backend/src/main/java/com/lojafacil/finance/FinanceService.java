@@ -39,7 +39,6 @@ import com.lojafacil.shared.web.PageResponse;
 
 @Service
 public class FinanceService {
-
     public static final ZoneId ZONE = ZoneId.of("America/Sao_Paulo");
 
     private final FinancialCategory.Repo categories;
@@ -57,9 +56,6 @@ public class FinanceService {
         this.currentUser = currentUser;
     }
 
-    // ------------------------------------------------------------------ categorias
-
-    /** Categorias padrão criadas junto com cada loja nova. */
     @EventListener
     @Transactional(propagation = Propagation.MANDATORY)
     public void onStoreCreated(StoreCreatedEvent event) {
@@ -111,8 +107,6 @@ public class FinanceService {
         return CategoryView.of(categories.save(c));
     }
 
-    // ------------------------------------------------------------------ lançamentos manuais
-
     @Transactional
     public List<EntryView> create(Long storeId, EntryRequest req) {
         FinancialCategory cat = categories.findByIdAndStoreId(req.categoryId(), storeId)
@@ -158,7 +152,6 @@ public class FinanceService {
         return created;
     }
 
-    /** Baixa: marca uma conta pendente como paga/recebida. */
     @Transactional
     public EntryView settle(Long storeId, Long id, LocalDate paidDate) {
         FinancialEntry e = find(storeId, id);
@@ -189,10 +182,6 @@ public class FinanceService {
         return EntryView.of(e, today());
     }
 
-    /**
-     * Estorno de lançamento realizado: cria um lançamento de tipo oposto, mesma categoria e valor,
-     * vinculado ao original. O original permanece no histórico, marcado como estornado.
-     */
     @Transactional
     public EntryView reverse(Long storeId, Long id, String reason) {
         FinancialEntry original = find(storeId, id);
@@ -226,12 +215,6 @@ public class FinanceService {
         return EntryView.of(rev, today());
     }
 
-    // ------------------------------------------------------------------ lançamentos automáticos (integrações)
-
-    /**
-     * Lançamento gerado por pedido/pagamento. É idempotente: o par (sourceType, sourceRef) é único,
-     * então reprocessar a mesma notificação não duplica valores.
-     */
     @Transactional(propagation = Propagation.MANDATORY)
     public void recordIntegration(Long storeId, EntryType type, SystemKey key, BigDecimal amount, LocalDate date,
                                   String description, SourceType source, String sourceRef, Long orderId,
@@ -257,8 +240,6 @@ public class FinanceService {
         e.setCustomerId(customerId);
         entries.save(e);
     }
-
-    // ------------------------------------------------------------------ consultas
 
     @Transactional(readOnly = true)
     public PageResponse<EntryView> search(Long storeId, EntryType type, Status status, Long categoryId, LocalDate from,
@@ -293,10 +274,6 @@ public class FinanceService {
         return PageResponse.of(page, e -> EntryView.of(e, today));
     }
 
-    /**
-     * Fluxo de caixa: realizado (por data de pagamento) e previsto (pendentes por vencimento).
-     * Saldo projetado = saldo realizado + previstos até a data.
-     */
     @Transactional(readOnly = true)
     public CashFlow cashFlow(Long storeId, LocalDate from, LocalDate to) {
         if (to.isBefore(from) || ChronoUnit.DAYS.between(from, to) > 730) {
@@ -312,7 +289,7 @@ public class FinanceService {
             int idx = row[1] == EntryType.INCOME ? 0 : 1;
             b[idx] = b[idx].add((BigDecimal) row[2]);
         }
-        // pendentes vencidos antes do período entram no primeiro dia como previsão em atraso
+
         for (Object[] row : entries.forecastByDay(storeId, LocalDate.of(2000, 1, 1), to)) {
             LocalDate d = (LocalDate) row[0];
             BigDecimal[] b = buckets.get(bucket(d.isBefore(from) ? from : d, monthly));
@@ -341,9 +318,9 @@ public class FinanceService {
         BigDecimal cogs = Money.normalize(orders.costOfGoodsSold(storeId, start, end));
 
         BigDecimal incomeNonReversal = Money.ZERO;
-        BigDecimal incomeReversals = Money.ZERO;   // estornos de despesas
+        BigDecimal incomeReversals = Money.ZERO;
         BigDecimal expenseManual = Money.ZERO;
-        BigDecimal expenseReversals = Money.ZERO;  // estornos de receitas
+        BigDecimal expenseReversals = Money.ZERO;
         BigDecimal fees = Money.ZERO;
         BigDecimal refunds = Money.ZERO;
         for (Object[] row : entries.paidBreakdown(storeId, from, to)) {
@@ -378,8 +355,6 @@ public class FinanceService {
                 Money.normalize(entries.overdueTotal(storeId, EntryType.EXPENSE, today)),
                 expensesPaid, operating, fees, refunds, cogs, result);
     }
-
-    // ------------------------------------------------------------------ auxiliares
 
     private FinancialEntry find(Long storeId, Long id) {
         return entries.findByIdAndStoreId(id, storeId).orElseThrow(() -> Errors.notFound("Lançamento"));

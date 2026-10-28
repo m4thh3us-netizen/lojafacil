@@ -32,18 +32,8 @@ import com.lojafacil.shared.util.Slugs;
 import com.lojafacil.shared.web.PageResponse;
 import com.lojafacil.shared.web.Pages;
 
-/**
- * Regras do catálogo.
- * <ul>
- *   <li>Produtos já vendidos nunca são excluídos: são arquivados (somem da vitrine e das buscas padrão,
- *       mas o histórico dos pedidos permanece intacto).</li>
- *   <li>Variantes removidas do formulário são desativadas, não apagadas, pelo mesmo motivo.</li>
- *   <li>O estoque não é editado aqui: o estoque inicial gera uma movimentação de entrada.</li>
- * </ul>
- */
 @Service
 public class ProductService {
-
     public static final int MAX_IMAGES = 8;
 
     private final ProductRepository products;
@@ -62,8 +52,6 @@ public class ProductService {
         this.files = files;
         this.audit = audit;
     }
-
-    // ------------------------------------------------------------------ painel
 
     @Transactional(readOnly = true)
     public PageResponse<ProductListItem> search(Long storeId, String q, Long categoryId, String status,
@@ -155,7 +143,6 @@ public class ProductService {
         return ProductDetail.of(p, products.isUsedInOrders(id));
     }
 
-    /** Exclusão definitiva só para produtos sem pedidos e sem movimentações; os demais devem ser arquivados. */
     @Transactional
     public void delete(Long storeId, Long id) {
         Product p = find(storeId, id);
@@ -195,7 +182,6 @@ public class ProductService {
         return ProductDetail.of(p, products.isUsedInOrders(id));
     }
 
-    /** Define a foto principal (posição 0). */
     @Transactional
     public ProductDetail setMainImage(Long storeId, Long id, Long imageId) {
         Product p = find(storeId, id);
@@ -206,8 +192,6 @@ public class ProductService {
         renumber(p);
         return ProductDetail.of(p, products.isUsedInOrders(id));
     }
-
-    // ------------------------------------------------------------------ vitrine
 
     @Transactional(readOnly = true)
     public PageResponse<PublicProductCard> storefrontSearch(Long storeId, String q, String categorySlug,
@@ -227,8 +211,6 @@ public class ProductService {
                 .orElseThrow(() -> Errors.notFound("Produto"));
         return PublicProductDetail.of(p);
     }
-
-    // ------------------------------------------------------------------ auxiliares
 
     Product find(Long storeId, Long id) {
         return products.findByIdAndStoreId(id, storeId).orElseThrow(() -> Errors.notFound("Produto"));
@@ -255,7 +237,6 @@ public class ProductService {
         }
     }
 
-    /** Cria/atualiza variantes pelo id; variantes ausentes no formulário são desativadas. */
     private void syncVariants(Long storeId, Product p, ProductRequest req) {
         List<VariantRequest> incoming = req.variants() == null ? List.of() : req.variants();
         if (incoming.stream().noneMatch(VariantRequest::active)) {

@@ -15,7 +15,6 @@ function slugify(s: string): string {
   return s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 60);
 }
 
-/** Cadastro em duas etapas: 1) responsável, 2) loja. Logo, cores e demais ajustes ficam para depois. */
 @Component({
   selector: 'app-register',
   imports: [ReactiveFormsModule, RouterLink, AuthFrame, PasswordField, Icon],
@@ -88,7 +87,6 @@ export class RegisterPage {
   readonly store = this.fb.group({ name: ['', Validators.required], slug: ['', [Validators.required, Validators.minLength(3)]], description: [''] });
 
   constructor() {
-    // Verificação de disponibilidade com debounce; switchMap cancela consultas ultrapassadas.
     this.store.controls.slug.valueChanges.pipe(
       debounceTime(350), distinctUntilChanged(), filter(v => v.length >= 3),
       switchMap(slug => this.http.get<{ available: boolean; reason?: string }>('/api/auth/slug-availability', { params: { slug } })),

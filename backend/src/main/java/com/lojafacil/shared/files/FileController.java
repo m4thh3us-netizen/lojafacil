@@ -13,11 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-/** Serve imagens públicas (logo, banner, fotos). Os nomes são UUIDs, então o cache pode ser longo. */
 @RestController
 @Tag(name = "Arquivos")
 public class FileController {
-
     private final FileStorageService storage;
 
     public FileController(FileStorageService storage) {

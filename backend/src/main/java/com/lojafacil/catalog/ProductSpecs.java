@@ -5,12 +5,7 @@ import java.util.Locale;
 
 import org.springframework.data.jpa.domain.Specification;
 
-/**
- * Filtros dinâmicos de produtos (Criteria API). Cada filtro é independente e todos geram
- * SQL parametrizado; o filtro por loja é sempre aplicado primeiro.
- */
 final class ProductSpecs {
-
     private ProductSpecs() {
     }
 
@@ -37,7 +32,6 @@ final class ProductSpecs {
         return slug == null || slug.isBlank() ? null : (root, q, cb) -> cb.equal(root.join("category").get("slug"), slug);
     }
 
-    /** status: "active" (ativos), "inactive" (inativos), "archived" (arquivados), "all" ou nulo (não arquivados). */
     static Specification<Product> status(String status) {
         if ("archived".equals(status)) {
             return (root, q, cb) -> cb.isNotNull(root.get("archivedAt"));
@@ -71,7 +65,6 @@ final class ProductSpecs {
         return max == null ? null : (root, q, cb) -> cb.lessThanOrEqualTo(root.get("effectivePrice"), max);
     }
 
-    /** Combina os filtros com AND, ignorando os que não foram informados (null). */
     @SafeVarargs
     static Specification<Product> all(Specification<Product> first, Specification<Product>... others) {
         Specification<Product> result = first;

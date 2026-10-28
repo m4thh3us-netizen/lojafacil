@@ -14,15 +14,6 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres;
 
-/**
- * Base dos testes de integração: usa um PostgreSQL REAL.
- * Usamos o banco real porque travas de linha (SELECT ... FOR UPDATE), CHECKs e índices únicos
- * são justamente o que estamos testando — um banco em memória (H2) não reproduziria esse comportamento.
- *
- * Com Docker disponível: Testcontainers (postgres:17-alpine).
- * Sem Docker (ou com LF_TEST_DB=embedded): PostgreSQL 17 embutido, baixado como dependência Maven.
- * Em ambos os casos o banco é único para toda a suíte, porque o contexto Spring é reaproveitado entre classes.
- */
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {
@@ -33,7 +24,6 @@ import io.zonky.test.db.postgres.embedded.EmbeddedPostgres;
         "spring.mail.port=1"
 })
 public abstract class IntegrationTest {
-
     private static final String URL;
     private static final String USER;
     private static final String PASSWORD;
@@ -49,7 +39,7 @@ public abstract class IntegrationTest {
             try {
                 EmbeddedPostgres pg = EmbeddedPostgres.builder().start();
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                    try { pg.close(); } catch (IOException ignored) { /* encerrando */ }
+                    try { pg.close(); } catch (IOException ignored) {}
                 }));
                 URL = pg.getJdbcUrl("postgres", "postgres");
                 USER = "postgres";

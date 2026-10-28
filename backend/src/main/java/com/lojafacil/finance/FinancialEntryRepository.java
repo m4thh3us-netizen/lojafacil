@@ -13,7 +13,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 public interface FinancialEntryRepository extends JpaRepository<FinancialEntry, Long>, JpaSpecificationExecutor<FinancialEntry> {
-
     @EntityGraph(attributePaths = {"category"})
     Optional<FinancialEntry> findByIdAndStoreId(Long id, Long storeId);
 
@@ -23,7 +22,6 @@ public interface FinancialEntryRepository extends JpaRepository<FinancialEntry, 
     @EntityGraph(attributePaths = {"category"})
     Page<FinancialEntry> findAll(org.springframework.data.jpa.domain.Specification<FinancialEntry> spec, Pageable pageable);
 
-    /** Realizado (pago/recebido) por dia, separado por tipo. */
     @Query("""
             select e.paidDate, e.type, sum(e.amount) from FinancialEntry e
             where e.storeId = :storeId and e.status = com.lojafacil.finance.FinancialEntry.Status.PAID
@@ -32,7 +30,6 @@ public interface FinancialEntryRepository extends JpaRepository<FinancialEntry, 
             """)
     List<Object[]> realizedByDay(Long storeId, LocalDate from, LocalDate to);
 
-    /** Previsto (pendente) por vencimento, separado por tipo. */
     @Query("""
             select e.dueDate, e.type, sum(e.amount) from FinancialEntry e
             where e.storeId = :storeId and e.status = com.lojafacil.finance.FinancialEntry.Status.PENDING
@@ -41,7 +38,6 @@ public interface FinancialEntryRepository extends JpaRepository<FinancialEntry, 
             """)
     List<Object[]> forecastByDay(Long storeId, LocalDate from, LocalDate to);
 
-    /** Saldo realizado acumulado antes de uma data (para o saldo inicial do fluxo de caixa). */
     @Query("""
             select coalesce(sum(case when e.type = com.lojafacil.finance.EntryType.INCOME then e.amount else -e.amount end), 0)
             from FinancialEntry e
@@ -49,7 +45,6 @@ public interface FinancialEntryRepository extends JpaRepository<FinancialEntry, 
             """)
     BigDecimal realizedBalanceBefore(Long storeId, LocalDate before);
 
-    /** Soma realizada no período por tipo, origem e categoria de sistema (base dos indicadores). */
     @Query("""
             select e.type, e.sourceType, c.systemKey, sum(e.amount) from FinancialEntry e join e.category c
             where e.storeId = :storeId and e.status = com.lojafacil.finance.FinancialEntry.Status.PAID
@@ -58,7 +53,6 @@ public interface FinancialEntryRepository extends JpaRepository<FinancialEntry, 
             """)
     List<Object[]> paidBreakdown(Long storeId, LocalDate from, LocalDate to);
 
-    /** Despesas operacionais por competência (vencimento no período), excluindo canceladas. */
     @Query("""
             select coalesce(sum(e.amount), 0) from FinancialEntry e join e.category c
             where e.storeId = :storeId and e.type = com.lojafacil.finance.EntryType.EXPENSE
@@ -68,7 +62,6 @@ public interface FinancialEntryRepository extends JpaRepository<FinancialEntry, 
             """)
     BigDecimal operatingExpensesByDue(Long storeId, LocalDate from, LocalDate to);
 
-    /** Estornos de despesas manuais (lançamentos de entrada que revertem despesas) no período. */
     @Query("""
             select coalesce(sum(e.amount), 0) from FinancialEntry e
             where e.storeId = :storeId and e.sourceType = com.lojafacil.finance.FinancialEntry.SourceType.REVERSAL
@@ -77,7 +70,6 @@ public interface FinancialEntryRepository extends JpaRepository<FinancialEntry, 
             """)
     BigDecimal expenseReversalsByDue(Long storeId, LocalDate from, LocalDate to);
 
-    /** Contas a receber em aberto (todas, independentemente do período). */
     @Query("""
             select coalesce(sum(e.amount), 0) from FinancialEntry e
             where e.storeId = :storeId and e.type = :type and e.status = com.lojafacil.finance.FinancialEntry.Status.PENDING

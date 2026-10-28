@@ -26,21 +26,8 @@ import com.lojafacil.payments.ProviderType;
 import com.lojafacil.shared.config.AppProperties;
 import com.lojafacil.shared.money.Money;
 
-/**
- * Integração com o Mercado Pago usando o Checkout Pro (checkout hospedado pelo Mercado Pago).
- *
- * <ul>
- *   <li>Criação de preferência: POST /checkout/preferences (com X-Idempotency-Key).</li>
- *   <li>Consulta: GET /v1/payments/{id} e GET /v1/payments/search?external_reference=...</li>
- *   <li>Reembolso: POST /v1/payments/{id}/refunds (com X-Idempotency-Key).</li>
- *   <li>Teste de credenciais: GET /users/me.</li>
- * </ul>
- * O cliente digita os dados do cartão na página do Mercado Pago; nada disso passa pelo nosso servidor.
- * Os logs registram apenas o status HTTP, nunca o token de acesso ou o corpo das respostas.
- */
 @Component
 public class MercadoPagoPaymentProvider implements PaymentProvider {
-
     private static final Logger log = LoggerFactory.getLogger(MercadoPagoPaymentProvider.class);
     private static final DateTimeFormatter MP_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 
@@ -71,7 +58,7 @@ public class MercadoPagoPaymentProvider implements PaymentProvider {
     @SuppressWarnings("unchecked")
     public CheckoutSession createCheckout(ProviderContext ctx, CheckoutRequest req) {
         Map<String, Object> body = new LinkedHashMap<>();
-        // Um único item com o total já calculado pelo servidor evita divergências de arredondamento
+
         body.put("items", List.of(Map.of(
                 "id", req.externalReference().toString(),
                 "title", req.description(),
@@ -82,7 +69,7 @@ public class MercadoPagoPaymentProvider implements PaymentProvider {
         body.put("external_reference", req.externalReference().toString());
         body.put("back_urls", Map.of("success", req.returnUrl(), "pending", req.returnUrl(), "failure", req.returnUrl()));
         if (req.returnUrl().startsWith("https://")) {
-            body.put("auto_return", "approved"); // o Mercado Pago exige back_urls públicas para retorno automático
+            body.put("auto_return", "approved");
         }
         if (req.notificationUrl() != null && req.notificationUrl().startsWith("https://")) {
             body.put("notification_url", req.notificationUrl());
@@ -123,10 +110,6 @@ public class MercadoPagoPaymentProvider implements PaymentProvider {
         }
     }
 
-    /**
-     * Uma preferência pode ter várias tentativas (ex.: cartão recusado e depois aprovado).
-     * Priorizamos a aprovada; senão, a mais recente.
-     */
     @Override
     @SuppressWarnings("unchecked")
     public Optional<ProviderPayment> findByExternalReference(ProviderContext ctx, UUID externalReference) {
@@ -178,8 +161,6 @@ public class MercadoPagoPaymentProvider implements PaymentProvider {
         }
     }
 
-    // ------------------------------------------------------------------ conversões
-
     @SuppressWarnings("unchecked")
     static ProviderPayment toProviderPayment(Map<String, Object> p) {
         String raw = String.valueOf(p.get("status"));
@@ -199,7 +180,7 @@ public class MercadoPagoPaymentProvider implements PaymentProvider {
             case "refunded", "charged_back" -> PaymentStatus.REFUNDED;
             case "rejected" -> PaymentStatus.DECLINED;
             case "cancelled" -> PaymentStatus.EXPIRED;
-            default -> PaymentStatus.PENDING; // pending, in_process, authorized, in_mediation
+            default -> PaymentStatus.PENDING;
         };
         Object live = p.get("live_mode");
         return new ProviderPayment(String.valueOf(p.get("id")), (String) p.get("external_reference"), status, raw,

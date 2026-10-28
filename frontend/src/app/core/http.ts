@@ -6,7 +6,6 @@ import { catchError, throwError } from 'rxjs';
 import { AuthService } from './auth.service';
 import { Role } from './models';
 
-/** Sessão expirada em chamadas do painel: volta para o login com aviso. */
 export const sessionInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
   return next(req).pipe(catchError((err: unknown) => {
@@ -27,7 +26,6 @@ export const guestGuard: CanActivateFn = () => {
   return auth.me() ? inject(Router).createUrlTree(['/painel']) : true;
 };
 
-/** A verificação real acontece no backend; o guard só evita mostrar telas inacessíveis. */
 export function roleGuard(...roles: Role[]): CanActivateFn {
   return () => {
     const auth = inject(AuthService);

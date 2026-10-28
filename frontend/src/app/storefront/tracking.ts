@@ -8,11 +8,6 @@ import { ToastService, errorMessage } from '../core/ui.services';
 import { Icon } from '../shared/icon';
 import { StoreContext } from './store-context';
 
-/**
- * Acompanhamento do pedido por link com token secreto (o número do pedido sozinho não dá acesso).
- * Ao abrir a página (inclusive voltando do checkout), o servidor consulta o provedor de pagamento:
- * a confirmação nunca depende de parâmetros do redirecionamento.
- */
 @Component({
   selector: 'app-store-tracking',
   imports: [RouterLink, BrlPipe, DatePipeBr, LabelPipe, TonePipe, Icon],
@@ -114,7 +109,6 @@ export class StoreTracking implements OnInit {
   });
 
   ngOnInit() {
-    // primeiro mostra o que já sabemos; em seguida pede ao servidor para conferir o pagamento no provedor
     this.api.order(this.ctx.slug(), this.token()).subscribe({
       next: o => { this.o.set(o); if (o.status === 'OPEN') this.refresh(); },
       error: () => this.notFound.set(true),

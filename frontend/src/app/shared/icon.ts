@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
-/** Conjunto único de ícones (traço 2px, 24x24, estilo consistente). Conteúdo estático, definido no código. */
 const ICONS: Record<string, string> = {
   dashboard: '<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
   box: '<path d="M21 8 12 3 3 8v8l9 5 9-5Z"/><path d="m3 8 9 5 9-5"/><path d="M12 13v8"/>',
@@ -66,6 +65,6 @@ export class Icon {
   private sanitizer = inject(DomSanitizer);
   readonly name = input.required<string>();
   readonly size = input(18);
-  // seguro: as strings vêm apenas do mapa estático acima, nunca de dados do usuário
+
   readonly svg = computed<SafeHtml>(() => this.sanitizer.bypassSecurityTrustHtml(ICONS[this.name()] ?? ''));
 }

@@ -7,5 +7,3 @@ frontend/.angular/
 .idea/
 .vscode/
 *.log
-.claude/
-.playwright-mcp/

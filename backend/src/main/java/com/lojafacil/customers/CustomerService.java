@@ -22,7 +22,6 @@ import com.lojafacil.shared.web.PageResponse;
 
 @Service
 public class CustomerService {
-
     private final Customer.Repo customers;
     private final Supplier.Repo suppliers;
     private final OrderRepository orders;
@@ -32,8 +31,6 @@ public class CustomerService {
         this.suppliers = suppliers;
         this.orders = orders;
     }
-
-    // ------------------------------------------------------------------ clientes
 
     @Transactional(readOnly = true)
     public PageResponse<CustomerListItem> search(Long storeId, String q, Pageable pageable) {
@@ -77,11 +74,6 @@ public class CustomerService {
         return get(storeId, id);
     }
 
-    /**
-     * Vincula um pedido da vitrine a um cliente. Se o e-mail já existe, os dados cadastrados NÃO são
-     * alterados (qualquer pessoa pode digitar qualquer e-mail no checkout); o pedido guarda a própria
-     * cópia de nome, telefone e endereço.
-     */
     @Transactional
     public Customer findOrCreateForOrder(Long storeId, String name, String email, String phone, AddressData address) {
         String normalized = email.trim().toLowerCase(Locale.ROOT);
@@ -93,7 +85,6 @@ public class CustomerService {
         return c;
     }
 
-    /** Cliente existente escolhido no pedido manual (sempre da mesma loja). */
     @Transactional(readOnly = true)
     public Customer findForOrder(Long storeId, Long id) {
         return find(storeId, id);
@@ -127,8 +118,6 @@ public class CustomerService {
         e.setZip(a.zip());
         return e;
     }
-
-    // ------------------------------------------------------------------ fornecedores
 
     @Transactional(readOnly = true)
     public PageResponse<SupplierView> searchSuppliers(Long storeId, String q, Pageable pageable) {

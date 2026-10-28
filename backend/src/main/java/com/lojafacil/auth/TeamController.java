@@ -22,13 +22,11 @@ import com.lojafacil.shared.security.Access;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-/** Gestão da equipe: apenas o proprietário convida, altera perfis ou desativa colaboradores. */
 @RestController
 @RequestMapping("/api/admin/team")
 @PreAuthorize(Access.OWNER)
 @Tag(name = "Equipe")
 public class TeamController {
-
     private final TeamService team;
 
     public TeamController(TeamService team) {

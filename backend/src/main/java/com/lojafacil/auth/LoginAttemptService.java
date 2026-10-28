@@ -13,18 +13,8 @@ import org.springframework.stereotype.Service;
 import com.lojafacil.shared.error.ApiException;
 import org.springframework.http.HttpStatus;
 
-/**
- * Limitação de tentativas (rate limiting) para login e recuperação de senha.
- *
- * Regra: no máximo {@value #MAX_FAILURES} falhas por chave (e-mail e IP, separadamente)
- * dentro de uma janela de 15 minutos. Ao ultrapassar, novas tentativas são bloqueadas até a janela passar.
- *
- * Limitação conhecida: o contador fica em memória, então vale por instância da aplicação e é
- * zerado ao reiniciar. Para várias instâncias, mover para o banco ou para um cache compartilhado.
- */
 @Service
 public class LoginAttemptService {
-
     static final int MAX_FAILURES = 5;
     static final Duration WINDOW = Duration.ofMinutes(15);
 

@@ -20,11 +20,9 @@ import com.lojafacil.inventory.InventoryRepositories.MovementRepo;
 import com.lojafacil.shared.error.Errors;
 import com.lojafacil.shared.web.PageResponse;
 
-/** Consultas de estoque (somente leitura). */
 @Service
 @Transactional(readOnly = true)
 public class InventoryQueries {
-
     public static final ZoneId ZONE = ZoneId.of("America/Sao_Paulo");
 
     public record StockView(Long variantId, Long productId, String productName, String sku, String variantName,
@@ -69,7 +67,7 @@ public class InventoryQueries {
         Instant start = (from != null ? from : LocalDate.of(2000, 1, 1)).atStartOfDay(ZONE).toInstant();
         Instant end = (to != null ? to.plusDays(1) : LocalDate.now(ZONE).plusDays(1)).atStartOfDay(ZONE).toInstant();
         Page<StockMovement> result = movements.search(storeId, variantId, productId, type, start, end, pageable);
-        // Busca os nomes dos usuários de uma só vez (evita uma consulta por linha - problema N+1)
+
         Map<Long, String> userNames = users.findAllById(result.getContent().stream()
                         .map(StockMovement::getUserId).filter(Objects::nonNull).distinct().toList())
                 .stream().collect(Collectors.toMap(User::getId, User::getFullName));

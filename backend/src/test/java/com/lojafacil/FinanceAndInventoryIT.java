@@ -23,7 +23,6 @@ import com.lojafacil.support.TestData;
 
 @Import(TestData.class)
 class FinanceAndInventoryIT extends IntegrationTest {
-
     @Autowired
     FinanceService finance;
     @Autowired
@@ -70,7 +69,7 @@ class FinanceAndInventoryIT extends IntegrationTest {
         assertThatThrownBy(() -> inventory.exit(s.storeId(), variantId, 3, "perda")).isInstanceOf(ApiException.class);
         assertThatThrownBy(() -> inventory.adjust(s.storeId(), variantId, -1, "contagem")).isInstanceOf(ApiException.class);
 
-        data.buy(s.slug(), variantId, 2); // reserva as 2 unidades
+        data.buy(s.slug(), variantId, 2);
         assertThatThrownBy(() -> inventory.exit(s.storeId(), variantId, 1, "uso interno")).isInstanceOf(ApiException.class);
         assertThatThrownBy(() -> inventory.adjust(s.storeId(), variantId, 1, "contagem")).isInstanceOf(ApiException.class);
         assertThat(data.variant(variantId).getPhysicalQty()).isEqualTo(2);

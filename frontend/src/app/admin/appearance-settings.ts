@@ -6,11 +6,6 @@ import { AuthService } from '../core/auth.service';
 import { ThemeService, ToastService, errorMessage } from '../core/ui.services';
 import { Icon } from '../shared/icon';
 
-/**
- * Aparência do painel: fundo (fotografia ou cor sólida), posição da foto, escurecimento uniforme
- * e opacidade do vidro. Cada alteração é aplicada ao painel inteiro como pré-visualização;
- * nada é gravado até clicar em "Salvar". Sair da tela descarta a pré-visualização.
- */
 @Component({
   selector: 'app-appearance-settings',
   imports: [FormsModule, Icon],
@@ -152,7 +147,6 @@ export class AppearanceSettings implements OnDestroy {
   readonly busy = signal<'save' | 'reset' | false>(false);
   readonly error = signal('');
 
-  /** Cada ajuste vira imediatamente a pré-visualização do painel. */
   set(patch: Partial<Appearance>) {
     this.error.set('');
     this.service.draft.set({ ...this.service.current(), ...patch });
@@ -200,7 +194,6 @@ export class AppearanceSettings implements OnDestroy {
     this.error.set('');
   }
 
-  /** Restaurar o padrão é uma ação explícita: grava direto (e remove a fotografia da loja). */
   resetDefault() {
     if (this.busy()) return;
     this.busy.set('reset');
@@ -211,7 +204,6 @@ export class AppearanceSettings implements OnDestroy {
   }
 
   ngOnDestroy() {
-    // sair da tela sem salvar descarta a pré-visualização
     this.service.draft.set(null);
   }
 }

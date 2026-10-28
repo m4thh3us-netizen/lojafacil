@@ -15,16 +15,8 @@ import com.lojafacil.shared.config.AppProperties;
 import com.lojafacil.shared.error.Errors;
 import com.lojafacil.shared.money.Money;
 
-/**
- * Provedor simulado. Comporta-se como um gateway externo (tem estado próprio, página de checkout
- * e envia notificações assinadas), mas nenhum dinheiro é movimentado. Tudo que passa por aqui
- * é exibido como "SIMULADO" na interface.
- *
- * Taxa simulada: 3,99% do valor, para que o financeiro demonstre o registro de taxas.
- */
 @Component
 public class SimulatedPaymentProvider implements PaymentProvider {
-
     static final BigDecimal FEE_PERCENT = new BigDecimal("3.99");
 
     private final SimulatorCharge.Repo charges;
@@ -102,14 +94,12 @@ public class SimulatedPaymentProvider implements PaymentProvider {
         return new ConnectionTest(true, "Simulador local ativo. Os pagamentos são fictícios e identificados como SIMULADOS.");
     }
 
-    // ------------------------------------------------------------------ ações da página de pagamento simulado
-
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public SimulatorCharge decide(UUID chargeId, boolean approve) {
         SimulatorCharge c = charges.findById(chargeId).orElseThrow(() -> Errors.notFound("Cobrança simulada"));
         if (c.getStatus() == SimulatorCharge.Status.APPROVED || c.getStatus() == SimulatorCharge.Status.REFUNDED
                 || c.getStatus() == SimulatorCharge.Status.PARTIALLY_REFUNDED) {
-            return c; // já aprovada: não muda (como um gateway real)
+            return c;
         }
         c.setStatus(approve ? SimulatorCharge.Status.APPROVED : SimulatorCharge.Status.REJECTED);
         return c;

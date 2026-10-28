@@ -66,7 +66,7 @@ export class StoreCatalog {
     this.route.queryParamMap.pipe(takeUntilDestroyed(inject(DestroyRef))).subscribe(p => {
       const q = p.get('q') ?? '';
       const category = p.get('categoria') ?? '';
-      // só busca quando a URL mudou "de fora" (ex.: busca do cabeçalho); mudanças feitas por apply() já buscaram
+
       if (first || q !== this.q || category !== this.category) {
         first = false;
         this.q = q;
@@ -76,7 +76,6 @@ export class StoreCatalog {
     });
   }
 
-  /** Mantém os filtros na URL (dá para compartilhar o link da busca). */
   apply(debounced = false) {
     this.router.navigate([], { relativeTo: this.route, queryParams: { q: this.q || null, categoria: this.category || null }, replaceUrl: true });
     this.list.search(debounced);

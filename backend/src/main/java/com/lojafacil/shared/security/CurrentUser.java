@@ -6,13 +6,8 @@ import org.springframework.stereotype.Component;
 
 import com.lojafacil.shared.error.UnauthorizedException;
 
-/**
- * Acesso ao usuário logado. Serviços administrativos usam {@link #storeId()} para filtrar
- * todas as consultas pela loja do usuário.
- */
 @Component
 public class CurrentUser {
-
     public AuthUser get() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !(auth.getPrincipal() instanceof AuthUser user)) {
@@ -29,7 +24,6 @@ public class CurrentUser {
         return get().storeId();
     }
 
-    /** Retorna o id do usuário, ou null quando a ação é do sistema (webhook, job). */
     public Long idOrNull() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return auth != null && auth.getPrincipal() instanceof AuthUser user ? user.id() : null;

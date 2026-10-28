@@ -12,7 +12,6 @@ import com.lojafacil.shared.util.Slugs;
 
 @Service
 public class CategoryService {
-
     private final Category.Repo categories;
 
     public CategoryService(Category.Repo categories) {

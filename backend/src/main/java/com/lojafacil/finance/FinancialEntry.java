@@ -20,23 +20,11 @@ import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * Lançamento financeiro (conta a pagar/receber ou movimento já realizado).
- *
- * <ul>
- *   <li>PENDING: previsto (conta a pagar ou a receber).</li>
- *   <li>PAID: realizado (pago ou recebido) — não é mais editado nem apagado.</li>
- *   <li>CANCELLED: previsão cancelada antes de ser realizada.</li>
- * </ul>
- * Correções de lançamentos realizados são feitas por ESTORNO: um novo lançamento do tipo oposto,
- * vinculado ao original. O histórico nunca é apagado.
- */
 @Entity
 @Table(name = "financial_entries")
 @Getter
 @Setter
 public class FinancialEntry {
-
     public enum Status { PENDING, PAID, CANCELLED }
 
     public enum SourceType { MANUAL, ORDER_PAYMENT, PAYMENT_FEE, REFUND, REVERSAL }
@@ -75,7 +63,6 @@ public class FinancialEntry {
     @Enumerated(EnumType.STRING)
     private SourceType sourceType = SourceType.MANUAL;
 
-    /** Identificador do evento de origem (ex.: "payment:42"). Único por loja: impede lançamentos duplicados. */
     private String sourceRef;
 
     private Long reversalOfId;

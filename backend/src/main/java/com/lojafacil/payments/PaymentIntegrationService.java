@@ -22,13 +22,8 @@ import com.lojafacil.shared.security.CurrentUser;
 import com.lojafacil.store.Store;
 import com.lojafacil.store.StoreRepository;
 
-/**
- * Configuração de pagamentos por loja e escolha do provedor.
- * Sem Mercado Pago configurado (ou no ambiente demonstrativo), a loja usa o simulador local.
- */
 @Service
 public class PaymentIntegrationService {
-
     public record ConfigView(ProviderType provider, boolean simulated, String publicKey, String accessTokenMasked,
                              String webhookSecretMasked, String webhookUrl, Instant lastTestAt, Boolean lastTestOk,
                              boolean demoMode, boolean liveTransactionsAllowed) {
@@ -40,7 +35,6 @@ public class PaymentIntegrationService {
                               @Size(max = 300) String webhookSecret) {
     }
 
-    /** Provedor + credenciais prontos para uso (credenciais só existem em memória durante a chamada). */
     public record Resolved(PaymentProvider provider, ProviderContext context) {
     }
 
@@ -64,7 +58,6 @@ public class PaymentIntegrationService {
         this.providers = providerList.stream().collect(Collectors.toMap(PaymentProvider::type, Function.identity()));
     }
 
-    /** Provedor que será usado em NOVAS cobranças da loja. */
     @Transactional(readOnly = true)
     public ProviderType activeProvider(Long storeId) {
         if (props.demoMode()) {
@@ -76,7 +69,6 @@ public class PaymentIntegrationService {
                 .orElse(ProviderType.SIMULATOR);
     }
 
-    /** Resolve provedor e credenciais para operar um pagamento já existente (usa o provedor do pagamento). */
     @Transactional(readOnly = true)
     public Resolved resolve(Long storeId, ProviderType type) {
         if (type == ProviderType.MANUAL) {
@@ -109,10 +101,6 @@ public class PaymentIntegrationService {
                 i.getLastTestAt(), i.getLastTestOk(), props.demoMode(), props.payments().allowLiveTransactions());
     }
 
-    /**
-     * Salva a configuração. Campos de credencial em branco mantêm o valor atual
-     * (a interface nunca recebe o valor salvo, só a versão mascarada).
-     */
     @Transactional
     public ConfigView save(Long storeId, SaveRequest req) {
         if (req.provider() == ProviderType.MANUAL) {
@@ -147,12 +135,11 @@ public class PaymentIntegrationService {
         i.setUpdatedBy(currentUser.idOrNull());
         i.setUpdatedAt(Instant.now());
         integrations.save(i);
-        // nunca registrar a credencial: apenas o fato de que foi alterada
+
         audit.record(storeId, "PAYMENT_INTEGRATION", i.getId(), "INTEGRATION_UPDATED", "Provedor: " + req.provider());
         return config(storeId);
     }
 
-    /** Testa as credenciais salvas. A chamada de rede acontece fora de transação. */
     public ConnectionTest test(Long storeId) {
         ProviderType type = activeProvider(storeId);
         Resolved r = resolve(storeId, type);
@@ -165,7 +152,7 @@ public class PaymentIntegrationService {
         integrations.findByStoreId(storeId).ifPresent(i -> {
             i.setLastTestAt(Instant.now());
             i.setLastTestOk(ok);
-            integrations.save(i); // chamada interna: sem @Transactional, o save do repositório grava
+            integrations.save(i);
         });
     }
 

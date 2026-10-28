@@ -35,13 +35,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @PreAuthorize(Access.OPERATIONS)
 @Tag(name = "Estoque")
 public class InventoryController {
-
     public enum ManualType { ENTRY, EXIT, ADJUSTMENT }
 
     public record MovementRequest(
             @NotNull Long variantId,
             @NotNull ManualType type,
-            /** Quantidade movimentada (entrada/saída) ou novo saldo físico (ajuste). */
+
             @NotNull @Min(0) @Max(1_000_000) Integer quantity,
             @NotBlank(message = "Informe o motivo.") @Size(min = 3, max = 300, message = "Descreva o motivo (3 a 300 caracteres).") String reason,
             Long supplierId) {

@@ -1,9 +1,8 @@
-/* Vitrine: paleta própria (clara) + cores do lojista. Não depende do tema do painel. */
 .storefront {
   color-scheme: light;
   --bg: #f7f7f9; --surface: #ffffff; --surface-2: #f8fafc; --surface-3: #eef1f6;
   --border: #e5e7eb; --border-strong: #d1d5db; --text: #111827; --text-2: #4b5563; --text-3: #6b7280;
-  /* a vitrine usa superfícies sólidas: o vidro e a fotografia são exclusivos do painel */
+
   --surface-rgb: 255 255 255; --text-rgb: 17 24 39;
   --panel: #ffffff; --panel-strong: #ffffff; --glass-border: #e5e7eb; --blur: 0px;
   --shadow: 0 1px 3px rgb(17 24 39 / .08); --shadow-lg: 0 20px 50px rgb(17 24 39 / .2);

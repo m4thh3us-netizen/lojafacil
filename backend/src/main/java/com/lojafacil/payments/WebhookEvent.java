@@ -15,13 +15,11 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Registro de notificações recebidas. A chave única (provider, event_key) descarta repetições. */
 @Entity
 @Table(name = "webhook_events")
 @Getter
 @Setter
 public class WebhookEvent {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -35,8 +33,6 @@ public class WebhookEvent {
     private String result;
 
     public interface Repo extends JpaRepository<WebhookEvent, Long> {
-
-        /** Insere o evento se ainda não existir. Retorna 1 para evento novo e 0 para repetido. */
         @Transactional
         @Modifying
         @Query(value = """

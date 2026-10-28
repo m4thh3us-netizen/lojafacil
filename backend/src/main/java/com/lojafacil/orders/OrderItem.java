@@ -13,16 +13,11 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * Item do pedido com a "fotografia" da venda: nome, SKU, preço, desconto e custo do momento.
- * Alterar o produto depois não muda pedidos já feitos.
- */
 @Entity
 @Table(name = "order_items")
 @Getter
 @Setter
 public class OrderItem {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

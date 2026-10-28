@@ -12,7 +12,6 @@ import { AuthFrame } from './auth-frame';
 
 export const PASSWORD_PATTERN = /^(?=.*[A-Za-z])(?=.*\d).{8,72}$/;
 
-/** Campo de senha com botão mostrar/ocultar. */
 @Component({
   selector: 'app-password-field',
   imports: [Icon],

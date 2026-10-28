@@ -16,13 +16,9 @@ import jakarta.validation.constraints.Size;
 import com.lojafacil.customers.CustomerDtos.AddressData;
 
 public final class OrderDtos {
-
     private OrderDtos() {
     }
 
-    // ------------------------------------------------------------------ entrada
-
-    /** Item do carrinho: apenas variante e quantidade. Preços são sempre recalculados no servidor. */
     public record CartLine(@NotNull Long variantId, @Min(value = 1, message = "Quantidade mínima: 1.") @Max(999) int quantity) {
     }
 
@@ -40,7 +36,6 @@ public final class OrderDtos {
             @Size(max = 500) String notes) {
     }
 
-    /** Prévia de totais do carrinho (sem reservar estoque). */
     public record QuoteRequest(@NotNull DeliveryMethod deliveryMethod,
                                @NotEmpty @Size(max = 50) @Valid List<CartLine> items) {
     }
@@ -72,17 +67,15 @@ public final class OrderDtos {
     public record ReturnRequest(
             @NotEmpty @Valid List<ReturnLine> items,
             @NotBlank(message = "Informe o motivo.") @Size(max = 500) String reason,
-            /** true quando a loja já recebeu os itens fisicamente. */
+
             boolean received,
-            /** Itens em condição de revenda (só vale se received = true). */
+
             Boolean conditionOk,
             @Size(max = 500) String inspectionNote) {
     }
 
     public record ReceiveReturnRequest(@NotNull Boolean conditionOk, @Size(max = 500) String inspectionNote) {
     }
-
-    // ------------------------------------------------------------------ saída
 
     public record QuoteLine(Long variantId, String productName, String variantName, String sku, String imageUrl,
                             int quantity, BigDecimal unitPrice, BigDecimal unitDiscount, BigDecimal lineTotal,
@@ -136,12 +129,10 @@ public final class OrderDtos {
                               List<HistoryView> history, List<FulfillmentStatus> allowedFulfillment) {
     }
 
-    /** Resposta do checkout: o token só aparece aqui e no link enviado ao cliente. */
     public record CheckoutResponse(int orderNumber, String trackingToken, String trackingUrl, String checkoutUrl,
                                    boolean simulated, BigDecimal total, String paymentError) {
     }
 
-    /** Visão pública do pedido (link de acompanhamento): sem custos nem observações internas. */
     public record PublicOrderView(int number, Instant createdAt, String customerName, DeliveryMethod deliveryMethod,
                                   String deliveryAddress, BigDecimal subtotal, BigDecimal discountTotal,
                                   BigDecimal deliveryFee, BigDecimal total, OrderStatus status,

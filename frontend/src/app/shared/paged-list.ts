@@ -5,13 +5,6 @@ import { Observable, Subject, catchError, debounce, of, switchMap, tap, timer } 
 import { Page } from '../core/models';
 import { errorMessage } from '../core/ui.services';
 
-/**
- * Lista paginada no servidor.
- * - reload(true): usado ao digitar na busca (espera 300 ms sem digitação = debounce).
- * - switchMap: se uma nova busca começa, a anterior é cancelada (evita resultados fora de ordem).
- * - O conteúdo anterior continua na tela durante o carregamento (sem "pulos" de layout).
- * Deve ser criado no contexto de injeção (campo de componente).
- */
 export class PagedList<T> {
   readonly data = signal<Page<T> | null>(null);
   readonly loading = signal(true);
@@ -31,7 +24,6 @@ export class PagedList<T> {
     });
   }
 
-  /** Nova busca/filtro: volta para a primeira página. */
   search(debounced = false) {
     this.page = 0;
     this.trigger.next(debounced);
@@ -50,7 +42,6 @@ export class PagedList<T> {
     return this.data()?.content ?? [];
   }
 
-  /** Mostra skeleton só no primeiro carregamento; depois mantém os dados e indica atualização. */
   get firstLoad(): boolean {
     return this.loading() && !this.data();
   }

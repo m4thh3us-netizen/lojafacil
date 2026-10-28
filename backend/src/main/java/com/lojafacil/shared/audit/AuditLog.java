@@ -11,13 +11,11 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-/** Registro imutável de ações sensíveis (estoque, pedidos, financeiro, configurações). */
 @Entity
 @Table(name = "audit_log")
 @Getter
 @NoArgsConstructor
 public class AuditLog {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

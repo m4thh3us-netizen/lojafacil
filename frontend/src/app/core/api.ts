@@ -4,7 +4,6 @@ import { Observable } from 'rxjs';
 
 import * as M from './models';
 
-/** Converte um objeto de filtros em HttpParams, ignorando valores vazios. */
 export function params(obj: Record<string, unknown>): HttpParams {
   let p = new HttpParams();
   for (const [k, v] of Object.entries(obj)) {
@@ -15,7 +14,6 @@ export function params(obj: Record<string, unknown>): HttpParams {
   return p;
 }
 
-/** Endpoints do painel administrativo. A loja é sempre a da sessão (definida no servidor). */
 @Injectable({ providedIn: 'root' })
 export class AdminApi {
   private http = inject(HttpClient);
@@ -23,7 +21,6 @@ export class AdminApi {
 
   dashboard(from: string, to: string) { return this.http.get<M.Dashboard>(`${this.base}/dashboard`, { params: params({ from, to }) }); }
 
-  // loja
   store() { return this.http.get<M.StoreSettings>(`${this.base}/store`); }
   saveStore(body: unknown) { return this.http.put<M.StoreSettings>(`${this.base}/store`, body); }
   resetTheme() { return this.http.post<M.StoreSettings>(`${this.base}/store/theme/reset`, {}); }
@@ -34,7 +31,6 @@ export class AdminApi {
   removeStoreImage(kind: 'logo' | 'banner') { return this.http.delete<M.StoreSettings>(`${this.base}/store/images/${kind}`); }
   audit(page: number) { return this.http.get<M.Page<M.AuditItem>>(`${this.base}/audit`, { params: params({ page, size: 30 }) }); }
 
-  // equipe e pagamentos
   team() { return this.http.get<M.TeamView>(`${this.base}/team`); }
   invite(body: { email: string; role: M.Role }) { return this.http.post<M.TeamView['invitations'][0]>(`${this.base}/team/invitations`, body); }
   revokeInvite(id: number) { return this.http.delete<void>(`${this.base}/team/invitations/${id}`); }
@@ -43,7 +39,6 @@ export class AdminApi {
   savePaymentConfig(body: unknown) { return this.http.put<M.PaymentConfig>(`${this.base}/payments/integration`, body); }
   testPayment() { return this.http.post<{ ok: boolean; message: string }>(`${this.base}/payments/integration/test`, {}); }
 
-  // catálogo
   categories() { return this.http.get<M.Category[]>(`${this.base}/categories`); }
   saveCategory(id: number | null, body: { name: string; active: boolean }) {
     return id ? this.http.put<M.Category>(`${this.base}/categories/${id}`, body) : this.http.post<M.Category>(`${this.base}/categories`, body);
@@ -59,12 +54,10 @@ export class AdminApi {
   removeProductImage(id: number, imageId: number) { return this.http.delete<M.ProductDetail>(`${this.base}/products/${id}/images/${imageId}`); }
   mainProductImage(id: number, imageId: number) { return this.http.post<M.ProductDetail>(`${this.base}/products/${id}/images/${imageId}/main`, {}); }
 
-  // estoque
   stock(f: Record<string, unknown>) { return this.http.get<M.Page<M.StockView>>(`${this.base}/inventory/stock`, { params: params(f) }); }
   movements(f: Record<string, unknown>) { return this.http.get<M.Page<M.MovementView>>(`${this.base}/inventory/movements`, { params: params(f) }); }
   move(body: unknown) { return this.http.post<M.StockView>(`${this.base}/inventory/movements`, body); }
 
-  // clientes e fornecedores
   customers(f: Record<string, unknown>) { return this.http.get<M.Page<M.CustomerListItem>>(`${this.base}/customers`, { params: params(f) }); }
   customer(id: number) { return this.http.get<M.CustomerDetail>(`${this.base}/customers/${id}`); }
   saveCustomer(id: number | null, body: unknown) {
@@ -76,7 +69,6 @@ export class AdminApi {
     return id ? this.http.put<M.Supplier>(`${this.base}/suppliers/${id}`, body) : this.http.post<M.Supplier>(`${this.base}/suppliers`, body);
   }
 
-  // pedidos
   orders(f: Record<string, unknown>) { return this.http.get<M.Page<M.OrderListItem>>(`${this.base}/orders`, { params: params(f) }); }
   order(id: number) { return this.http.get<M.OrderDetail>(`${this.base}/orders/${id}`); }
   quote(body: unknown) { return this.http.post<M.Quote>(`${this.base}/orders/quote`, body); }
@@ -85,7 +77,6 @@ export class AdminApi {
     return this.http.post<M.OrderDetail>(`${this.base}/orders/${id}/${action}`, body);
   }
 
-  // financeiro
   finCategories() { return this.http.get<M.FinCategory[]>(`${this.base}/finance/categories`); }
   saveFinCategory(id: number | null, body: unknown) {
     return id ? this.http.put<M.FinCategory>(`${this.base}/finance/categories/${id}`, body) : this.http.post<M.FinCategory>(`${this.base}/finance/categories`, body);
@@ -97,7 +88,6 @@ export class AdminApi {
   finSummary(from: string, to: string) { return this.http.get<M.FinSummary>(`${this.base}/finance/summary`, { params: params({ from, to }) }); }
 }
 
-/** Endpoints da vitrine pública (sem login). */
 @Injectable({ providedIn: 'root' })
 export class PublicApi {
   private http = inject(HttpClient);

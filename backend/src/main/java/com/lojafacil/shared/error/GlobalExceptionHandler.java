@@ -20,14 +20,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-/**
- * Converte exceções em respostas padronizadas (RFC 9457 - Problem Details):
- * <pre>{ "status": 422, "code": "INSUFFICIENT_STOCK", "detail": "...", "errors": {campo: msg} }</pre>
- * Detalhes internos (stack trace, SQL) nunca são enviados ao cliente.
- */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(ApiException.class)

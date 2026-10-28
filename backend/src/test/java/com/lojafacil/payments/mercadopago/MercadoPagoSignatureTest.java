@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 class MercadoPagoSignatureTest {
-
     private static final String SECRET = "segredo-de-teste";
 
     @Test

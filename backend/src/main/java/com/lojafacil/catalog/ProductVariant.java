@@ -17,22 +17,11 @@ import lombok.Setter;
 
 import com.lojafacil.shared.money.Money;
 
-/**
- * Unidade vendável (SKU) com estoque próprio.
- *
- * <ul>
- *   <li><b>physicalQty</b>: unidades fisicamente na loja.</li>
- *   <li><b>reservedQty</b>: unidades separadas para pedidos aguardando pagamento.</li>
- *   <li><b>disponível</b> = físico - reservado (o que pode ser vendido agora).</li>
- * </ul>
- * Alterações de saldo acontecem apenas pelo {@code InventoryService}, sempre com a linha travada.
- */
 @Entity
 @Table(name = "product_variants")
 @Getter
 @Setter
 public class ProductVariant {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -62,7 +51,6 @@ public class ProductVariant {
         return physicalQty - reservedQty;
     }
 
-    /** Ex.: "M / Azul". Nulo para a variante padrão de produto simples. */
     public String displayName() {
         if (option1Value == null && option2Value == null) {
             return null;
@@ -73,15 +61,10 @@ public class ProductVariant {
         return option1Value == null ? option2Value : option1Value + " / " + option2Value;
     }
 
-    /** Preço de tabela da variante (sem promoção). */
     public BigDecimal listPrice() {
         return priceOverride != null ? priceOverride : product.getSalePrice();
     }
 
-    /**
-     * Desconto unitário. A promoção do produto vale para variantes sem preço próprio;
-     * variantes com preço próprio não recebem o desconto promocional.
-     */
     public BigDecimal unitDiscount() {
         if (priceOverride == null && product.getPromoPrice() != null) {
             return Money.normalize(product.getSalePrice().subtract(product.getPromoPrice()));

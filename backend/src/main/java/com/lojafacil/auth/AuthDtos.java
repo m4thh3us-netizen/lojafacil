@@ -7,9 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-/** Objetos de entrada e saída do módulo de autenticação. */
 public final class AuthDtos {
-
     private AuthDtos() {
     }
 
@@ -68,7 +66,6 @@ public final class AuthDtos {
     public record StoreSummary(Long id, String name, String slug, boolean demo) {
     }
 
-    /** Resposta de /me: quem está logado, em qual loja e com qual perfil. */
     public record MeResponse(UserView user, StoreSummary store, boolean demoMode) {
     }
 

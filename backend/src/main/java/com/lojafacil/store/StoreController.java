@@ -32,7 +32,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @Tag(name = "Loja e personalização")
 public class StoreController {
-
     private final StoreService service;
     private final CurrentUser currentUser;
     private final AuditService audit;

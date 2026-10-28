@@ -18,13 +18,8 @@ import org.springframework.stereotype.Component;
 
 import com.lojafacil.shared.config.AppProperties;
 
-/**
- * Cifra credenciais de integração (ex.: access token do Mercado Pago) antes de gravá-las no banco.
- * Algoritmo: AES-256-GCM, com IV aleatório por valor. A chave vem de APP_ENCRYPTION_KEY.
- */
 @Component
 public class SecretCipher {
-
     private static final Logger log = LoggerFactory.getLogger(SecretCipher.class);
     private static final int IV_LENGTH = 12;
     private static final int TAG_BITS = 128;
@@ -77,7 +72,6 @@ public class SecretCipher {
         }
     }
 
-    /** Exibe apenas os últimos 4 caracteres: "••••••••1a2b". */
     public static String mask(String plain) {
         if (plain == null || plain.isEmpty()) {
             return null;

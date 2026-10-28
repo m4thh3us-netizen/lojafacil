@@ -12,7 +12,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script>
-    // Aplica o tema salvo antes do Angular carregar, evitando "piscar" o tema errado.
     try {
       var t = localStorage.getItem('lf-theme');
       if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);

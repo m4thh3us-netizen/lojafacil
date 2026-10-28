@@ -3,7 +3,6 @@ import { RouterLink } from '@angular/router';
 
 import { Brand, ThemeToggle } from '../shared/theme-toggle';
 
-/** Moldura das telas de autenticação (cartão central com efeito de vidro). */
 @Component({
   selector: 'app-auth-frame',
   imports: [RouterLink, Brand, ThemeToggle],

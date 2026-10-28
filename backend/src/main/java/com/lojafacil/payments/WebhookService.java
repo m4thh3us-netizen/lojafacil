@@ -16,16 +16,8 @@ import com.lojafacil.shared.error.ApiException;
 import com.lojafacil.store.Store;
 import com.lojafacil.store.StoreService;
 
-/**
- * Recebimento de webhooks.
- *
- * Fluxo: (1) valida a assinatura; (2) registra o evento com chave única — repetições são descartadas;
- * (3) responde rápido e processa em segundo plano, consultando o provedor para obter a situação real.
- * Se o processamento falhar, a conciliação periódica ({@link PaymentJobs}) corrige depois.
- */
 @Service
 public class WebhookService {
-
     private static final Logger log = LoggerFactory.getLogger(WebhookService.class);
 
     public enum Outcome { ACCEPTED, DUPLICATE, IGNORED }
@@ -49,7 +41,7 @@ public class WebhookService {
                                       String type, String notificationId, String action) {
         Store store = stores.getBySlug(storeSlug);
         if (!"payment".equals(type) || dataId == null || dataId.isBlank()) {
-            return Outcome.IGNORED; // outros tópicos (ex.: merchant_order) não são usados nesta versão
+            return Outcome.IGNORED;
         }
         String secret = integrations.resolve(store.getId(), ProviderType.MERCADO_PAGO).context().webhookSecret();
         if (!MercadoPagoSignature.isValid(xSignature, xRequestId, dataId, secret)) {
@@ -60,7 +52,6 @@ public class WebhookService {
         return register(ProviderType.MERCADO_PAGO, key, dataId, store.getId());
     }
 
-    /** Notificação do simulador: payload "eventId=...&chargeId=...&storeId=..." assinado com HMAC. */
     public Outcome receiveSimulator(String payload, String signature) {
         if (signature == null || !simulatorSigner.verify(payload, signature)) {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "INVALID_SIGNATURE", "Assinatura inválida.");
@@ -101,10 +92,8 @@ public class WebhookService {
         return map;
     }
 
-    /** Processamento em segundo plano (bean separado para o @Async funcionar via proxy). */
     @Service
     public static class WebhookProcessor {
-
         private final PaymentService payments;
         private final WebhookEvent.Repo events;
 
@@ -118,7 +107,6 @@ public class WebhookService {
             processNow(provider, key, resourceId, storeId);
         }
 
-        /** Versão síncrona, usada também pelos testes. Sem transação aqui: a consulta ao provedor é chamada de rede. */
         public String processNow(ProviderType provider, String key, String resourceId, Long storeId) {
             String result;
             try {
