@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, WritableSignal, computed, inject, input, signal } from '@angular/core';
 
 import { brl, date } from '../core/format';
 
@@ -11,6 +11,24 @@ import { brl, date } from '../core/format';
 const W = 640;
 const H = 220;
 const PAD = { l: 56, r: 12, t: 12, b: 26 };
+
+/**
+ * A largura interna do SVG acompanha a largura real do gráfico. Assim os textos dos eixos mantêm
+ * o mesmo tamanho em qualquer tela, em vez de serem ampliados junto com o desenho.
+ */
+function trackWidth(): WritableSignal<number> {
+  const width = signal(W);
+  const host = inject(ElementRef<HTMLElement>).nativeElement as HTMLElement;
+  if (typeof ResizeObserver !== 'undefined') {
+    const ro = new ResizeObserver(([entry]) => {
+      const w = Math.round(entry.contentRect.width);
+      if (w > 0) width.set(Math.max(280, Math.min(1600, w)));
+    });
+    ro.observe(host);
+    inject(DestroyRef).onDestroy(() => ro.disconnect());
+  }
+  return width;
+}
 
 function niceMax(v: number): number {
   if (v <= 0) return 1;
@@ -56,7 +74,9 @@ export interface BarPoint { label: string; value: number; extra?: string; }
   styleUrl: './charts.scss',
 })
 export class BarChart {
-  readonly W = W; readonly H = H; readonly PAD = PAD;
+  readonly width = trackWidth();
+  get W() { return this.width(); }
+  readonly H = H; readonly PAD = PAD;
   readonly data = input.required<BarPoint[]>();
   readonly money = input(true);
   readonly ariaLabel = input('Gráfico de barras');
@@ -69,9 +89,9 @@ export class BarChart {
   }));
   readonly bars = computed(() => {
     const d = this.data();
-    const slot = (W - PAD.l - PAD.r) / Math.max(d.length, 1);
+    const slot = (this.width() - PAD.l - PAD.r) / Math.max(d.length, 1);
     const w = Math.max(2, Math.min(28, slot - 2)); // 2px de respiro entre barras
-    const every = Math.ceil(d.length / 8);
+    const every = Math.ceil(d.length / Math.max(4, Math.floor(this.width() / 80)));
     return d.map((p, i) => {
       const h = (p.value / this.max()) * (H - PAD.t - PAD.b);
       const x = PAD.l + i * slot + (slot - w) / 2;
@@ -130,7 +150,9 @@ export interface LineSeries { name: string; color: string; dashed?: boolean; val
   styleUrl: './charts.scss',
 })
 export class LineChart {
-  readonly W = W; readonly H = H; readonly PAD = PAD;
+  readonly width = trackWidth();
+  get W() { return this.width(); }
+  readonly H = H; readonly PAD = PAD;
   readonly labelsIn = input.required<string[]>();
   readonly series = input.required<LineSeries[]>();
   readonly ariaLabel = input('Gráfico de linhas');
@@ -144,7 +166,7 @@ export class LineChart {
     const min = minRaw < 0 ? -niceMax(-minRaw) : 0;
     return { min, max };
   });
-  readonly step = computed(() => (W - PAD.l - PAD.r) / Math.max(this.labelsIn().length - 1, 1));
+  readonly step = computed(() => (this.width() - PAD.l - PAD.r) / Math.max(this.labelsIn().length - 1, 1));
   xAt(i: number) { return PAD.l + i * this.step(); }
   yAt(v: number) {
     const { min, max } = this.range();
@@ -153,14 +175,17 @@ export class LineChart {
   readonly ticks = computed(() => {
     const { min, max } = this.range();
     const vals = min < 0 ? [min, 0, max] : [0, max / 2, max];
-    return vals.map(v => ({ y: this.yAt(v), label: compact(v), zero: v === 0 }));
+    const ticks = vals.map(v => ({ y: this.yAt(v), label: compact(v), zero: v === 0 }));
+    // evita rótulos sobrepostos: some o que estiver colado na linha do zero
+    const zeroY = this.yAt(0);
+    return ticks.map(t => (!t.zero && Math.abs(t.y - zeroY) < 14 ? { ...t, label: '' } : t));
   });
   readonly paths = computed(() => this.series().map(s => ({
     ...s, d: s.values.map((v, i) => `${i === 0 ? 'M' : 'L'}${this.xAt(i).toFixed(1)},${this.yAt(v).toFixed(1)}`).join(' '),
   })));
   readonly labels = computed(() => {
     const l = this.labelsIn();
-    const every = Math.ceil(l.length / 7);
+    const every = Math.ceil(l.length / Math.max(4, Math.floor(this.width() / 90)));
     return l.map((text, i) => ({ i, text: text.slice(0, 5), full: text, show: i % every === 0 }));
   });
 }
