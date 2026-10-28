@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>LojaFácil</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Gestão de e-commerce para pequenas lojas: catálogo, estoque, pedidos, pagamentos e financeiro.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    // Aplica o tema salvo antes do Angular carregar, evitando "piscar" o tema errado.
+    try {
+      var t = localStorage.getItem('lf-theme');
+      if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <app-root></app-root>
+  <noscript>O LojaFácil precisa de JavaScript habilitado.</noscript>
+</body>
+</html>
